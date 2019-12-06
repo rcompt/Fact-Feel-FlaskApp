@@ -79,12 +79,12 @@ while decrement:
         decrement = True
 
 #Load the emotion lexicon dictionary
-p_file = open("Emotion-Lexicon-Dictionary.p","rb")
+p_file = open(os.path.join("..","lexicons","Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
 emo_dic = pickle.load(p_file,encoding="latin-1")
 p_file.close()
 
 #Load the subjective lexicon dictionary
-p_file = open("subjective_lexicon_dic.p","rb")
+p_file = open(os.path.join("..","lexicons","subjective_lexicon_dic_py3.pkl"),"rb")
 subj_dic = pickle.load(p_file,encoding="latin-1")
 p_file.close()
 
@@ -256,20 +256,6 @@ _liwc_categories = [
     'Total third person']
 
 #LIWC features
-
-
-
-
-_dictionary = None
-def default_dictionary_filename():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), 'LIWC2007_English100131.dic'))
-def load_dictionary(filename):
-    global _dictionary
-    _dictionary = Dictionary(filename)
-
-load_dictionary(default_dictionary_filename())
-# might be better to split on whatever... but this seems about right
-_liwc_tokenizer = re.compile(r'(\d[^a-z\(\)]*|[a-z](?:[\'\.]?[a-z])*|(?<=[a-z])[^a-z0-9\s\(\)]+|[\(\)][^a-z]*)',re.UNICODE|re.IGNORECASE)
 
 #tests:
 #jan 1, 2010 = 2 words
@@ -630,6 +616,19 @@ class Dictionary():
         ('Grooming', None, None, 65, 'groom')]
 
 
+_dictionary = None
+def default_dictionary_filename():
+    return os.path.abspath(os.path.join("..","lexicons",'LIWC2007_English100131.dic'))
+def load_dictionary(filename):
+    global _dictionary
+    _dictionary = Dictionary(filename)
+
+load_dictionary(default_dictionary_filename())
+# might be better to split on whatever... but this seems about right
+_liwc_tokenizer = re.compile(r'(\d[^a-z\(\)]*|[a-z](?:[\'\.]?[a-z])*|(?<=[a-z])[^a-z0-9\s\(\)]+|[\(\)][^a-z]*)',re.UNICODE|re.IGNORECASE)
+
+
+
 def find_smilies(text):
     smilies = [":)", ":P", ":b", ":-)", 
                ":-P", ":-b", ";)", ";P", 
@@ -652,7 +651,7 @@ emo_cats = ['anticipation_emo', 'joy_emo', 'negative_emo', 'sadness_emo', 'disgu
  
 subj_cats = ["weak-negative","strong-negative","weak-positive","strong-positive"]
 
-subj_dic = pickle.load(open('subjective_lexicon_dic.p','rb'),encoding="latin-1")
+subj_dic = pickle.load(open(os.path.join("..","lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
 POS = {"JJ":"adj",
        "JJR":"adj",
        "JJS":"adj",
@@ -1044,7 +1043,7 @@ def cosine_sim(text1, text2):
     return ((tfidf * tfidf.T).A)[0,1]
 
 #Open the pickled model file
-model_file = open("Linear_Model_qr_emo_liwc_pos_subj_features_Response.p","rb")
+model_file = open(os.path.join("..","model","Linear_Model_qr_py3.pkl"),"rb")
 r_regr = pickle.load(model_file,encoding="latin-1")
 model_file.close()
 
