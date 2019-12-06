@@ -10,9 +10,11 @@ import os
 from flask import Flask, render_template
 import logging
 
+from model.Fact_Feel_Regression import FactFeelRegressor
 
 log = logging.getLogger("FactFeel_log.txt")
 
+ff_model = FactFeelRegressor()
                         
 app = Flask(__name__)
 
