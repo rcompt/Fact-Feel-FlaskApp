@@ -6,8 +6,9 @@ Created on Tue Dec  3 15:38:17 2019
 """
 
 import os
+import json
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import logging
 
 from model.Fact_Feel_Regression import FactFeelRegressor
@@ -22,13 +23,17 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    return render_template("home.html",prediction="NULL")
 
 @app.route("/predict",methods=["POST"])
 def predict():
     req_data = request.get_json()
-    data = req_data["DATA"]
-    ff_model.predict(data)
+    text = req_data["TEXT"]
+    feats = feat_extractor.get_feats(text)
+    prediction = ff_model.predict(feats)
+    
+#    return render_template("home.html",prediction=prediction)
+    return jsonify({'prediction': prediction})
     
 
 if __name__ == "__main__":

@@ -25,4 +25,5 @@ class FactFeelRegressor():
             return pickle.load(f_p,encoding="latin-1")
         
     def predict(self,data):
-        return self.model.predict(data)
+        t_data = self.normalizer.transform(data)
+        return self.model.predict(t_data)
