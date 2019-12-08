@@ -7,7 +7,7 @@ Created on Tue Dec  3 15:38:17 2019
 
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import logging
 
 from model.Fact_Feel_Regression import FactFeelRegressor
@@ -24,9 +24,12 @@ app = Flask(__name__)
 def home():
     return render_template("home.html")
 
-@app.route("/predict")
+@app.route("/predict",methods=["POST"])
 def predict():
-    pass
+    req_data = request.get_json()
+    data = req_data["DATA"]
+    ff_model.predict(data)
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
