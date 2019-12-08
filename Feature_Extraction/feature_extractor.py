@@ -300,7 +300,7 @@ class Dictionary():
 
 
 feat_list_model_order = None
-with open(os.path.join("feature_order.pkl"),"rb") as f_p:
+with open(os.path.join("feature_extraction","feature_order.pkl"),"rb") as f_p:
     feat_list_model_order = pickle.load(f_p)
 
 #feat_list_model_order = [
@@ -436,7 +436,7 @@ with open(os.path.join("feature_order.pkl"),"rb") as f_p:
 #        ]
 
 POS = None
-with open("POS_dict.pkl","rb") as f_p:
+with open(os.path.join("feature_extraction","POS_dict.pkl"),"rb") as f_p:
     POS = pickle.load(f_p)
 
 #POS = {"JJ":"adj",
@@ -460,7 +460,7 @@ with open("POS_dict.pkl","rb") as f_p:
 #        }
 
 punct_feats = None
-with open("punct_feats.pkl","rb") as f_p:
+with open(os.path.join("feature_extraction","punct_feats.pkl"),"rb") as f_p:
     punct_feats = pickle.load(f_p)
 
 #punct_feats = {
@@ -518,7 +518,7 @@ subj_cats = ["weak-negative","strong-negative","weak-positive","strong-positive"
 
 
 _liwc_categories = None
-with open("liwc_categories.pkl","rb") as f_p:
+with open(os.path.join("feature_extraction","liwc_categories.pkl"),"rb") as f_p:
     _liwc_categories = pickle.load(f_p)
 
 #_liwc_categories = [
@@ -694,16 +694,16 @@ class FeatureExtractor():
         self.glob_word = ""
         
     def _load_lexicons(self):
-        self.subj_dic = pickle.load(open(os.path.join("..","lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
+        self.subj_dic = pickle.load(open(os.path.join("lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
         self._dictionary = None
         self.load_dictionary(self.default_dictionary_filename())
         #Load the emotion lexicon dictionary
-        p_file = open(os.path.join("..","lexicons","Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
+        p_file = open(os.path.join("lexicons","Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
         self.emo_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
         #Load the subjective lexicon dictionary
-        p_file = open(os.path.join("..","lexicons","subjective_lexicon_dic_py3.pkl"),"rb")
+        p_file = open(os.path.join("lexicons","subjective_lexicon_dic_py3.pkl"),"rb")
         self.subj_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
@@ -720,7 +720,7 @@ class FeatureExtractor():
         self.vectorizer = TfidfVectorizer(tokenizer=normalize_cosine, stop_words='english')
 
     def default_dictionary_filename(self):
-        return os.path.abspath(os.path.join("..","lexicons","LIWC2007_English100131.dic"))
+        return os.path.abspath(os.path.join("lexicons","LIWC2007_English100131.dic"))
     
     def load_dictionary(self,filename):
         self._dictionary = Dictionary(filename)

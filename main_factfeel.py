@@ -11,11 +11,13 @@ from flask import Flask, render_template
 import logging
 
 from model.Fact_Feel_Regression import FactFeelRegressor
+from feature_extraction.feature_extractor import FeatureExtractor
 
 log = logging.getLogger("FactFeel_log.txt")
 
 ff_model = FactFeelRegressor()
-                        
+feat_extractor = FeatureExtractor()      
+                  
 app = Flask(__name__)
 
 @app.route("/")

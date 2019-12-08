@@ -13,6 +13,11 @@ from sklearn import linear_model
 class FactFeelRegressor():
     
     def __init__(self):
+        
+        
+        with open(os.path.join("model","Fact_Feel_noramlizer.pkl"),"rb") as f_p:
+            self.normalizer = pickle.load(f_p)
+        
         self.model = self.load_model()
         
     def load_model(self):
