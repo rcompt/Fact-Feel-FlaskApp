@@ -299,171 +299,184 @@ class Dictionary():
         ('Grooming', None, None, 65, 'groom')]
 
 
-feat_list_model_order = [
-        "Word Count",
-        "Words Per Sentence",
-        "Six Letter Words",
-        "Dictionary Words",
-        "Numerals",
-        "Total Function Words",
-        "Total Pronouns",
-        "Personal Pronouns",
-        "First Person Singular",
-        "First Person Plural",
-        "Second Person",
-        "Third Person Singular",
-        "Third Person Plural",
-        "Impersonal Pronouns",
-        "Articles",
-        "Common Verbs",
-        "Auxiliary Verbs",
-        "Past Tense",
-        "Present Tense",
-        "Future Tense",
-        "Adverbs",
-        "Prepositions",
-        "Conjunctions",
-        "Negations",
-        "Quantifiers",
-        "Number",
-        "Swear Words",
-        "Social Processes",
-        "Family",
-        "Friends",
-        "Humans",
-        "Affective Processes",
-        'Positive Emotion', 
-        'Negative Emotion', 
-        'Anxiety', 
-        'Anger', 
-        'Sadness', 
-        'Cognitive Processes', 
-        'Insight',
-        'Causation', 
-        'Discrepancy', 
-        'Tentative', 
-        'Certainty', 
-        'Inhibition', 
-        'Inclusive', 
-        'Exclusive', 
-        'Perceptual Processes', 
-        'See', 
-        'Hear', 
-        'Feel', 
-        'Biological Processes', 
-        'Body', 
-        'Health', 
-        'Sexual',
-        'Ingestion',
-        'Relativity', 
-        'Motion', 
-        'Space', 
-        'Time', 
-        'Work',
-        'Achievement', 
-        'Leisure', 
-        'Home', 
-        'Money', 
-        'Religion', 
-        'Death', 
-        'Assent', 
-        'Nonfluencies', 
-        'Fillers', 
-        "Period",
-        "Comma",
-        "Colon",
-        "Semi Colon",
-        "Question Mark",
-        "Exclamation Mark",
-        "Dash",
-        "Quote",
-        "Apostrophe",
-        "Parenthesis",
-        "Other Punctuation",
-        "All Punctuation",
-        "CC",
-        "CD",
-        "DT",
-        "EX",
-        "FW",
-        "IN",
-        "JJ",
-        "JJR",
-        "JJS",
-        "LS",
-        "MD",
-        "NN",
-        "NNS",
-        "NNP",
-        "NNPS",
-        "PDT",
-        "POS",
-        "PRP",
-        "PRP$",
-        "RB",
-        "RBR",
-        "RBS",
-        "RP",
-        "SYM",
-        "TO",
-        "UH",
-        "VB",
-        "VBD",
-        "VBG",
-        "VBN",
-        "VBP",
-        "VBZ",
-        "WDT",
-        "WP",
-        "WP$",
-        "WRB",
-        "anticipation_emo",
-        "joy_emo",
-        "negative_emo",
-        "sadness_emo",
-        "disgust_emo",
-        "positive_emo",
-        "anger_emo",
-        "surprise_emo",
-        "fear_emo",
-        "trust_emo",
-        "Strong-subjective",
-        "Weak-subjective"
-        ]
-POS = {"JJ":"adj",
-       "JJR":"adj",
-       "JJS":"adj",
-       "NN":"noun",
-       "NNS":"noun",
-       "NNP":"noun",
-       "NNPS":"noun",
-       "PRP":"noun",
-       "PRP$":"noun",
-       "RB":"adverb",
-       "RBR":"adverb",
-       "RB$":"adverb",
-       "VB":"verb",
-       "VBD":"verb",
-       "VBG":"verb",
-       "VBN":"verb",
-       "VBP":"verb",
-       "VBZ":"verb"
-        }
+feat_list_model_order = None
+with open(os.path.join("feature_order.pkl"),"rb") as f_p:
+    feat_list_model_order = pickle.load(f_p)
 
-punct_feats = {
-        "Period" : ".",
-        "Comma": ",",
-        "Colon": ":",
-        "Semi Colon": ";",
-        "Question Mark": "?",
-        "Exclamation Mark": "!",
-        "Dash": "-",
-        "Quote": '"',
-        "Apostrophe": "'",
-        "Parenthesis": "()",
-        "Other Punctuation": '#$%&*+/<=>@[\\]^_`{|}~',
-        "All Punctuation": ""
-        }
+#feat_list_model_order = [
+#        "Word Count",
+#        "Words Per Sentence",
+#        "Six Letter Words",
+#        "Dictionary Words",
+#        "Numerals",
+#        "Total Function Words",
+#        "Total Pronouns",
+#        "Personal Pronouns",
+#        "First Person Singular",
+#        "First Person Plural",
+#        "Second Person",
+#        "Third Person Singular",
+#        "Third Person Plural",
+#        "Impersonal Pronouns",
+#        "Articles",
+#        "Common Verbs",
+#        "Auxiliary Verbs",
+#        "Past Tense",
+#        "Present Tense",
+#        "Future Tense",
+#        "Adverbs",
+#        "Prepositions",
+#        "Conjunctions",
+#        "Negations",
+#        "Quantifiers",
+#        "Number",
+#        "Swear Words",
+#        "Social Processes",
+#        "Family",
+#        "Friends",
+#        "Humans",
+#        "Affective Processes",
+#        'Positive Emotion', 
+#        'Negative Emotion', 
+#        'Anxiety', 
+#        'Anger', 
+#        'Sadness', 
+#        'Cognitive Processes', 
+#        'Insight',
+#        'Causation', 
+#        'Discrepancy', 
+#        'Tentative', 
+#        'Certainty', 
+#        'Inhibition', 
+#        'Inclusive', 
+#        'Exclusive', 
+#        'Perceptual Processes', 
+#        'See', 
+#        'Hear', 
+#        'Feel', 
+#        'Biological Processes', 
+#        'Body', 
+#        'Health', 
+#        'Sexual',
+#        'Ingestion',
+#        'Relativity', 
+#        'Motion', 
+#        'Space', 
+#        'Time', 
+#        'Work',
+#        'Achievement', 
+#        'Leisure', 
+#        'Home', 
+#        'Money', 
+#        'Religion', 
+#        'Death', 
+#        'Assent', 
+#        'Nonfluencies', 
+#        'Fillers', 
+#        "Period",
+#        "Comma",
+#        "Colon",
+#        "Semi Colon",
+#        "Question Mark",
+#        "Exclamation Mark",
+#        "Dash",
+#        "Quote",
+#        "Apostrophe",
+#        "Parenthesis",
+#        "Other Punctuation",
+#        "All Punctuation",
+#        "CC",
+#        "CD",
+#        "DT",
+#        "EX",
+#        "FW",
+#        "IN",
+#        "JJ",
+#        "JJR",
+#        "JJS",
+#        "LS",
+#        "MD",
+#        "NN",
+#        "NNS",
+#        "NNP",
+#        "NNPS",
+#        "PDT",
+#        "POS",
+#        "PRP",
+#        "PRP$",
+#        "RB",
+#        "RBR",
+#        "RBS",
+#        "RP",
+#        "SYM",
+#        "TO",
+#        "UH",
+#        "VB",
+#        "VBD",
+#        "VBG",
+#        "VBN",
+#        "VBP",
+#        "VBZ",
+#        "WDT",
+#        "WP",
+#        "WP$",
+#        "WRB",
+#        "anticipation_emo",
+#        "joy_emo",
+#        "negative_emo",
+#        "sadness_emo",
+#        "disgust_emo",
+#        "positive_emo",
+#        "anger_emo",
+#        "surprise_emo",
+#        "fear_emo",
+#        "trust_emo",
+#        "Strong-subjective",
+#        "Weak-subjective"
+#        ]
+
+POS = None
+with open("POS_dict.pkl","rb") as f_p:
+    POS = pickle.load(f_p)
+
+#POS = {"JJ":"adj",
+#       "JJR":"adj",
+#       "JJS":"adj",
+#       "NN":"noun",
+#       "NNS":"noun",
+#       "NNP":"noun",
+#       "NNPS":"noun",
+#       "PRP":"noun",
+#       "PRP$":"noun",
+#       "RB":"adverb",
+#       "RBR":"adverb",
+#       "RB$":"adverb",
+#       "VB":"verb",
+#       "VBD":"verb",
+#       "VBG":"verb",
+#       "VBN":"verb",
+#       "VBP":"verb",
+#       "VBZ":"verb"
+#        }
+
+punct_feats = None
+with open("punct_feats.pkl","rb") as f_p:
+    punct_feats = pickle.load(f_p)
+
+#punct_feats = {
+#        "Period" : ".",
+#        "Comma": ",",
+#        "Colon": ":",
+#        "Semi Colon": ";",
+#        "Question Mark": "?",
+#        "Exclamation Mark": "!",
+#        "Dash": "-",
+#        "Quote": '"',
+#        "Apostrophe": "'",
+#        "Parenthesis": "()",
+#        "Other Punctuation": '#$%&*+/<=>@[\\]^_`{|}~',
+#        "All Punctuation": ""
+#        }
 
 strong_pos_adjectives = ["incredible", "wellwritten", "great", "excellent",
                          "successful", "outstanding", "impressive", "best", "highest",
@@ -503,81 +516,86 @@ emo_cats = ['anticipation_emo', 'joy_emo', 'negative_emo', 'sadness_emo', 'disgu
  
 subj_cats = ["weak-negative","strong-negative","weak-positive","strong-positive"]
 
-_liwc_categories = [
-    'Unique Words',
-    'Dictionary Words',
-    'Other Punctuation',
-    'Numerals',
-    'Six Letter Words',
-    'Word Count',
-    'Sentences',
-    'Words Per Sentence',
-    'Total Function Words',
-    'Total Pronouns',
-    'Personal Pronouns',
-    'First Person Singular', 
-    'First Person Plural', 
-    'Second Person',
-    'Third Person Singular', 
-    'Third Person Plural', 
-    'Impersonal Pronouns', 
-    'Articles',
-    'Common Verbs', 
-    'Auxiliary Verbs', 
-    'Past Tense', 
-    'Present Tense', 
-    'Future Tense', 
-    'Adverbs', 
-    'Prepositions', 
-    'Conjunctions', 
-    'Negations', 
-    'Quantifiers', 
-    'Number', 
-    'Swear Words', 
-    'Social Processes', 
-    'Family', 
-    'Friends', 
-    'Humans', 
-    'Affective Processes',
-    'Positive Emotion', 
-    'Negative Emotion', 
-    'Anxiety', 
-    'Anger', 
-    'Sadness', 
-    'Cognitive Processes', 
-    'Insight',
-    'Causation', 
-    'Discrepancy', 
-    'Tentative', 
-    'Certainty', 
-    'Inhibition', 
-    'Inclusive', 
-    'Exclusive', 
-    'Perceptual Processes', 
-    'See', 
-    'Hear', 
-    'Feel', 
-    'Biological Processes', 
-    'Body', 
-    'Health', 
-    'Sexual',
-    'Ingestion',
-    'Relativity', 
-    'Motion', 
-    'Space', 
-    'Time', 
-    'Work',
-    'Achievement', 
-    'Leisure', 
-    'Home', 
-    'Money', 
-    'Religion', 
-    'Death', 
-    'Assent', 
-    'Nonfluencies', 
-    'Fillers', 
-    'Total first person',
-    'Total third person']
+
+_liwc_categories = None
+with open("liwc_categories.pkl","rb") as f_p:
+    _liwc_categories = pickle.load(f_p)
+
+#_liwc_categories = [
+#    'Unique Words',
+#    'Dictionary Words',
+#    'Other Punctuation',
+#    'Numerals',
+#    'Six Letter Words',
+#    'Word Count',
+#    'Sentences',
+#    'Words Per Sentence',
+#    'Total Function Words',
+#    'Total Pronouns',
+#    'Personal Pronouns',
+#    'First Person Singular', 
+#    'First Person Plural', 
+#    'Second Person',
+#    'Third Person Singular', 
+#    'Third Person Plural', 
+#    'Impersonal Pronouns', 
+#    'Articles',
+#    'Common Verbs', 
+#    'Auxiliary Verbs', 
+#    'Past Tense', 
+#    'Present Tense', 
+#    'Future Tense', 
+#    'Adverbs', 
+#    'Prepositions', 
+#    'Conjunctions', 
+#    'Negations', 
+#    'Quantifiers', 
+#    'Number', 
+#    'Swear Words', 
+#    'Social Processes', 
+#    'Family', 
+#    'Friends', 
+#    'Humans', 
+#    'Affective Processes',
+#    'Positive Emotion', 
+#    'Negative Emotion', 
+#    'Anxiety', 
+#    'Anger', 
+#    'Sadness', 
+#    'Cognitive Processes', 
+#    'Insight',
+#    'Causation', 
+#    'Discrepancy', 
+#    'Tentative', 
+#    'Certainty', 
+#    'Inhibition', 
+#    'Inclusive', 
+#    'Exclusive', 
+#    'Perceptual Processes', 
+#    'See', 
+#    'Hear', 
+#    'Feel', 
+#    'Biological Processes', 
+#    'Body', 
+#    'Health', 
+#    'Sexual',
+#    'Ingestion',
+#    'Relativity', 
+#    'Motion', 
+#    'Space', 
+#    'Time', 
+#    'Work',
+#    'Achievement', 
+#    'Leisure', 
+#    'Home', 
+#    'Money', 
+#    'Religion', 
+#    'Death', 
+#    'Assent', 
+#    'Nonfluencies', 
+#    'Fillers', 
+#    'Total first person',
+#    'Total third person']
 
 #LIWC features
 
@@ -601,18 +619,18 @@ _liwc_categories = [
 # asdf = not a sentence
 # Mr. = sentence
 
-def score_text(text, raw_counts=False, scores=None, unique_words=None):
+def score_text(text, _dictionary,raw_counts=False, scores=None, unique_words=None):
     """Returns a sparse counter object of word frequencies or counts if raw_counts is specified
         @param scores: If you want to keep a running total, Scores should be
             a Counter of previous counts and raw_counts should be set to True!
         @param unique_words: Again, will be created if None. Should be a set().
             If used, you'll probably want to override the scores['Unique Words'] category.
     """
-    global _dictionary
     assert _dictionary is not None, 'Dictionary not loaded, you need to load a .dic file, perhaps from LIWC...'
     if scores is None: scores = Counter()
     if unique_words is None: unique_words = set()
-
+    _liwc_tokenizer = re.compile(r'(\d[^a-z\(\)]*|[a-z](?:[\'\.]?[a-z])*|(?<=[a-z])[^a-z0-9\s\(\)]+|[\(\)][^a-z]*)',re.UNICODE|re.IGNORECASE)
+    
     sentence_terminated = True
     for line in text.strip().split('\n'):
         all_tokens = _liwc_tokenizer.findall(line.strip().lower())
@@ -673,18 +691,20 @@ class FeatureExtractor():
     
     def __init__(self):
         self._load_lexicons()
+        self.glob_word = ""
         
     def _load_lexicons(self):
-        subj_dic = pickle.load(open(os.path.join("..","lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
-        load_dictionary(default_dictionary_filename())
+        self.subj_dic = pickle.load(open(os.path.join("..","lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
+        self._dictionary = None
+        self.load_dictionary(self.default_dictionary_filename())
         #Load the emotion lexicon dictionary
         p_file = open(os.path.join("..","lexicons","Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
-        emo_dic = pickle.load(p_file,encoding="latin-1")
+        self.emo_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
         #Load the subjective lexicon dictionary
         p_file = open(os.path.join("..","lexicons","subjective_lexicon_dic_py3.pkl"),"rb")
-        subj_dic = pickle.load(p_file,encoding="latin-1")
+        self.subj_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
         stemmer = nltk.stem.porter.PorterStemmer()
@@ -697,13 +717,19 @@ class FeatureExtractor():
         def normalize_cosine(text):
             return stem_tokens(nltk.word_tokenize(text.lower().translate(remove_punctuation_map)))
         
-        vectorizer = TfidfVectorizer(tokenizer=normalize_cosine, stop_words='english')
+        self.vectorizer = TfidfVectorizer(tokenizer=normalize_cosine, stop_words='english')
 
-    def cosine_sim(text1, text2):
-        tfidf = vectorizer.fit_transform([text1, text2])
+    def default_dictionary_filename(self):
+        return os.path.abspath(os.path.join("..","lexicons","LIWC2007_English100131.dic"))
+    
+    def load_dictionary(self,filename):
+        self._dictionary = Dictionary(filename)
+
+    def cosine_sim(self,text1, text2):
+        tfidf = self.vectorizer.fit_transform([text1, text2])
         return ((tfidf * tfidf.T).A)[0,1]
 
-    def find_smilies(text):
+    def find_smilies(self,text):
         smilies = [":)", ":P", ":b", ":-)", 
                    ":-P", ":-b", ";)", ";P", 
                    ";b", ";-)", ";-P", ";-b", 
@@ -719,11 +745,7 @@ class FeatureExtractor():
         return sum([temp_counts[item] for item in temp_counts])
         
         
-    def get_feats(text):
-        global subj_cats
-        global emo_dic
-        global temp_dic
-        global glob_word
+    def get_feats(self,text):
         
         feats = {}
         for elem in subj_cats:
@@ -779,7 +801,7 @@ class FeatureExtractor():
         for cat in emo_cats:
             text_cats[cat] = 0.0
         
-        for key in emo_dic[list(emo_dic.keys())[0]]:
+        for key in self.emo_dic[list(self.emo_dic.keys())[0]]:
             results[key] = 0.0
     		#Separate the words given from pattern.parse into a list
     #    for word_emo in subj_parsed:
@@ -788,11 +810,11 @@ class FeatureExtractor():
         for word in words:
     			#To ensure the word is in the lexicon match the case by making all text lower case
             word = word.lower()
-            glob_word = word
+            self.glob_word = word
     			#Count the number of times a category is found
-            if word in emo_dic:
-                for cat in emo_dic[word]:
-                    text_cats[cat+"_emo"] += float(emo_dic[word][cat])
+            if word in self.emo_dic:
+                for cat in self.emo_dic[word]:
+                    text_cats[cat+"_emo"] += float(self.emo_dic[word][cat])
     		#Append the emotion category frequency to the row
         for cat in text_cats:
             text_cats[cat] = text_cats[cat]/len(words)
@@ -812,7 +834,7 @@ class FeatureExtractor():
         #Get Smiley features
         for word_smile in smile:
             feats["smiley"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_smile), text.lower()))
-        feats["smiley"] += find_smilies(text)
+        feats["smiley"] += self.find_smilies(text)
         #Get Greetings features
         for word_greet in greetings:
             feats["greetings"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_greet), text.lower()))
@@ -836,11 +858,11 @@ class FeatureExtractor():
                 pos = ptags[index]
     #            lem = parts[2]
                 #Get Subjectivity Features 
-                if w.lower() in subj_dic:
+                if w.lower() in self.subj_dic:
                     pos_temp = POS.get(pos,"anypos")
-                    if pos_temp in subj_dic[w.lower()]:
-                        subj = subj_dic[w.lower()][pos_temp]["type"].replace("subj","")
-                        polarity = subj + "-" + subj_dic[w.lower()][pos_temp]['priorpolarity']
+                    if pos_temp in self.subj_dic[w.lower()]:
+                        subj = self.subj_dic[w.lower()][pos_temp]["type"].replace("subj","")
+                        polarity = subj + "-" + self.subj_dic[w.lower()][pos_temp]['priorpolarity']
                         if polarity in subj_cats:
                             feats[polarity] += 1
     #            elif lem in subj_dic:
@@ -868,7 +890,7 @@ class FeatureExtractor():
                             if next_pos == "verb":
                                 feats["please_verb"] += 1
         
-        liwc_feats = score_text(text)
+        liwc_feats = score_text(text,self._dictionary)
         for feat in liwc_feats:
             if feat in feats:
                 feats[feat] = liwc_feats[feat]
@@ -892,3 +914,11 @@ class FeatureExtractor():
                 count += text.count(char)
             feats[feat] = count
         return feats
+    
+if __name__ == "__main__":
+    FE_ = FeatureExtractor()
+    print("TESTING FEATURE EXTRACTOR")
+    print(FE_.get_feats("Hello there! How is your day going? I hope you are having an amazing happy time!"))    
+    print("SUCCESS!")
+    
+    
