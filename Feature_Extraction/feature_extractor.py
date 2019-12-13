@@ -18,8 +18,12 @@ import nltk, string
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 import nltk
+
+import numpy as np
+
 from nltk.stem import WordNetLemmatizer
 
+os.chdir("C:\\Users\\Ryan\\Documents\\Projects\\Fact-Feel-FlaskApp")
 
 import re
 import string
@@ -914,7 +918,13 @@ class FeatureExtractor():
                 count += text.count(char)
             feats[feat] = count
         return feats
-    
+
+def order_feats(feats,feat_order):
+    new_feats = []
+    for feat in feat_order:
+        new_feats.append(feats[feat])
+    return np.array(new_feats)
+
 if __name__ == "__main__":
     FE_ = FeatureExtractor()
     print("TESTING FEATURE EXTRACTOR")
