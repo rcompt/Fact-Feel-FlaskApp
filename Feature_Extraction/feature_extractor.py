@@ -723,6 +723,16 @@ class FeatureExtractor():
         
         self.vectorizer = TfidfVectorizer(tokenizer=normalize_cosine, stop_words='english')
 
+
+        self.agg_feat_dict = {'Strong-subjective':['strong-negative','strong-positive'],
+                         'Weak-subjective':['weak-negative','weak-positive']
+                         }
+        
+        p_file = open(os.path.join("feature_extraction","feature_order.pkl"),"rb")
+        self.feat_order = pickle.load(p_file)
+        p_file.close()
+        
+
     def default_dictionary_filename(self):
         return os.path.abspath(os.path.join("lexicons","LIWC2007_English100131.dic"))
     
@@ -919,16 +929,26 @@ class FeatureExtractor():
             feats[feat] = count
         return feats
 
-def order_feats(feats,feat_order):
-    new_feats = []
-    for feat in feat_order:
-        new_feats.append(feats[feat])
-    return np.array(new_feats)
+    
+    def order_feats(self,feats):
+        new_feats = []
+        for feat in self.feat_order:
+            if feat in self.agg_feat_dict:
+                feat_val = 0.0
+                for sub_feat in self.agg_feat_dict[feat]:
+                    feat_val += feats[sub_feat]
+                new_feats.append(feat_val)
+            else:
+                new_feats.append(feats[feat])
+        return np.array(new_feats)
+
+    def run(self,text):
+        return self.order_feats(self.get_feats(text))
 
 if __name__ == "__main__":
     FE_ = FeatureExtractor()
     print("TESTING FEATURE EXTRACTOR")
-    print(FE_.get_feats("Hello there! How is your day going? I hope you are having an amazing happy time!"))    
+    print(FE_.run("Hello there! How is your day going? I hope you are having an amazing happy time!"))    
     print("SUCCESS!")
     
     
