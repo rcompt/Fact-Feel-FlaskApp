@@ -32,7 +32,7 @@ class FactFeelRegressor():
         
     def predict(self,data):
         t_data = self.normalizer.transform(data)
-        return self.model.predict(t_data)
+        return self.model.predict(t_data)*-1
 
 
 if __name__ == "__main__":
