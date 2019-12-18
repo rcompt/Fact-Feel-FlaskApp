@@ -29,8 +29,8 @@ def home():
 def predict():
     req_data = request.get_json()
     text = req_data["TEXT"]
-    feats = feat_extractor.get_feats(text)
-    prediction = ff_model.predict(feats)
+    feats = feat_extractor.run(text)
+    prediction = ff_model.predict(feats)[0]
     
 #    return render_template("home.html",prediction=prediction)
     return jsonify({'prediction': prediction})
