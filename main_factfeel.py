@@ -23,7 +23,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return render_template("home.html",prediction="NULL")
+    return render_template("home.html",prediction="2.56")
 
 @app.route("/predict",methods=["POST"])
 def predict():

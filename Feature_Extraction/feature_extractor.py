@@ -23,7 +23,7 @@ import numpy as np
 
 from nltk.stem import WordNetLemmatizer
 
-os.chdir("C:\\Users\\Ryan\\Documents\\Projects\\Fact-Feel-FlaskApp")
+#os.chdir("C:\\Users\\Ryan\\Documents\\Projects\\Fact-Feel-FlaskApp")
 
 import re
 import string
