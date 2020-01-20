@@ -7,7 +7,10 @@
 <body>
     Hello World
     {{prediction}}
-	<div id="root"></div>
+    <form action="/predict" method="post">
+        Text Input: <input type="text" name="TEXT" value="Hello there! Input text here."><br>
+    <input type="submit" value="prediction">
+    </form>
 </body>
 </html>
 
