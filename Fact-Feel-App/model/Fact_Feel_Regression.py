@@ -14,7 +14,7 @@ import os
 
 from sklearn import linear_model
 
-from .feature_extraction.feature_extractor import FeatureExtractor
+from feature_extraction.feature_extractor import FeatureExtractor
 
 class FactFeelRegressor():
     
