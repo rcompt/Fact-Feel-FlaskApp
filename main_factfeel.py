@@ -21,6 +21,12 @@ feat_extractor = FeatureExtractor()
                   
 app = Flask(__name__)
 
+#class NumpyArrayEncoder(JSONEncoder):
+#    def default(self, obj):
+#        if isinstance(obj, numpy.ndarray):
+#            return obj.tolist()
+#        return JSONEncoder.default(self, obj)
+
 @app.route("/")
 def home():
     return render_template("home.html",prediction="2.56")
@@ -30,10 +36,12 @@ def predict():
     req_data = request.get_json()
     text = req_data["TEXT"]
     feats = feat_extractor.run(text)
-    prediction = ff_model.predict(feats)[0]
+    prediction = ff_model.predict([feats])
     
+    predictionData = {'prediction': list(prediction)}
+    #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
 #    return render_template("home.html",prediction=prediction)
-    return jsonify({'prediction': prediction})
+    return jsonify(predictionData)
     
 
 if __name__ == "__main__":
