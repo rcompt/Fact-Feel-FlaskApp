@@ -304,7 +304,7 @@ class Dictionary():
 
 
 feat_list_model_order = None
-with open(os.path.join(os.getcwd(),"feature_extraction","feature_order.pkl"),"rb") as f_p:
+with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","feature_order.pkl"),"rb") as f_p:
     feat_list_model_order = pickle.load(f_p)
 
 #feat_list_model_order = [
