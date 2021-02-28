@@ -440,7 +440,7 @@ with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","feature
 #        ]
 
 POS = None
-with open(os.path.join("feature_extraction","POS_dict.pkl"),"rb") as f_p:
+with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","POS_dict.pkl"),"rb") as f_p:
     POS = pickle.load(f_p)
 
 #POS = {"JJ":"adj",
@@ -464,7 +464,7 @@ with open(os.path.join("feature_extraction","POS_dict.pkl"),"rb") as f_p:
 #        }
 
 punct_feats = None
-with open(os.path.join("feature_extraction","punct_feats.pkl"),"rb") as f_p:
+with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","punct_feats.pkl"),"rb") as f_p:
     punct_feats = pickle.load(f_p)
 
 #punct_feats = {
@@ -522,7 +522,7 @@ subj_cats = ["weak-negative","strong-negative","weak-positive","strong-positive"
 
 
 _liwc_categories = None
-with open(os.path.join("feature_extraction","liwc_categories.pkl"),"rb") as f_p:
+with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","liwc_categories.pkl"),"rb") as f_p:
     _liwc_categories = pickle.load(f_p)
 
 #_liwc_categories = [
@@ -698,16 +698,16 @@ class FeatureExtractor():
         self.glob_word = ""
         
     def _load_lexicons(self):
-        self.subj_dic = pickle.load(open(os.path.join("lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
+        self.subj_dic = pickle.load(open(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
         self._dictionary = None
         self.load_dictionary(self.default_dictionary_filename())
         #Load the emotion lexicon dictionary
-        p_file = open(os.path.join("lexicons","Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
+        p_file = open(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons","Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
         self.emo_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
         #Load the subjective lexicon dictionary
-        p_file = open(os.path.join("lexicons","subjective_lexicon_dic_py3.pkl"),"rb")
+        p_file = open(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons","subjective_lexicon_dic_py3.pkl"),"rb")
         self.subj_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
@@ -728,7 +728,7 @@ class FeatureExtractor():
                          'Weak-subjective':['weak-negative','weak-positive']
                          }
         
-        p_file = open(os.path.join("feature_extraction","feature_order.pkl"),"rb")
+        p_file = open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","feature_order.pkl"),"rb")
         self.feat_order = pickle.load(p_file)
         p_file.close()
         
