@@ -33,15 +33,16 @@ def home():
 
 @app.route("/predict",methods=["POST"])
 def predict():
-    req_data = request.get_json()
-    text = req_data["TEXT"]
-    feats = feat_extractor.run(text)
-    prediction = ff_model.predict([feats])
-    
-    predictionData = {'prediction': list(prediction)}
-    #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
-#    return render_template("home.html",prediction=prediction)
-    return jsonify(predictionData)
+    if request.data:
+        req_data = request.get_json()
+        text = req_data["TEXT"]
+        feats = feat_extractor.run(text)
+        prediction = ff_model.predict([feats])
+
+        predictionData = {'prediction': list(prediction)}
+        #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
+    #    return render_template("home.html",prediction=prediction)
+        return jsonify(predictionData)
     
 
 if __name__ == "__main__":
