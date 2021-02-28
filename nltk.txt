@@ -1,2 +1,2 @@
 averaged_perceptron_tagger
-english
+punkt
