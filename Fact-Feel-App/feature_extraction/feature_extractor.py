@@ -734,7 +734,7 @@ class FeatureExtractor():
         
 
     def default_dictionary_filename(self):
-        return os.path.abspath(os.path.join("lexicons","LIWC2007_English100131.dic"))
+        return os.path.abspath(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons","LIWC2007_English100131.dic"))
     
     def load_dictionary(self,filename):
         self._dictionary = Dictionary(filename)
