@@ -34,8 +34,8 @@ def home():
 @app.route("/predict",methods=["POST"])
 def predict():
     if request.data:
-        req_data = request.get_json()
-        text = req_data["TEXT"]
+        #req_data = request.get_json()
+        text = request.json.get('TEXT')
         feats = feat_extractor.run(text)
         prediction = ff_model.predict([feats])
 
