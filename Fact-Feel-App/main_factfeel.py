@@ -20,6 +20,7 @@ ff_model = FactFeelRegressor()
 feat_extractor = FeatureExtractor()      
                   
 app = Flask(__name__)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 #class NumpyArrayEncoder(JSONEncoder):
 #    def default(self, obj):
