@@ -1,1 +1,1 @@
-web: gunicorn main_factfeel:app
+web: gunicorn --pythonpath app main_factfeel:app
