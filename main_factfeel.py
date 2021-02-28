@@ -11,8 +11,8 @@ import json
 from flask import Flask, render_template, request, jsonify
 import logging
 
-from model.Fact_Feel_Regression import FactFeelRegressor
-from feature_extraction.feature_extractor import FeatureExtractor
+from .model.Fact_Feel_Regression import FactFeelRegressor
+from .feature_extraction.feature_extractor import FeatureExtractor
 
 log = logging.getLogger("FactFeel_log.txt")
 
