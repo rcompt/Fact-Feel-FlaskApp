@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactFeelView", "FactFeelView\FactFeelView.csproj", "{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C53C08E8-5552-4340-85C0-D40532C73E48}
+	EndGlobalSection
+EndGlobal
