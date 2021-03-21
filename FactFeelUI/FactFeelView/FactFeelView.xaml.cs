@@ -1,13 +1,13 @@
 ﻿using System.Windows;
 
-namespace FactFeelMainView
+namespace FactFeelUI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class FactFeelView : Window
     {
-        public MainWindow()
+        public FactFeelView()
         {
             InitializeComponent();
         }
