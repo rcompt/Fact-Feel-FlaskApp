@@ -2,7 +2,6 @@
 using System;
 using LiveCharts;
 using System.Windows.Media;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace FactFeelUI.Client
@@ -27,6 +26,7 @@ namespace FactFeelUI.Client
             }
         }
 
+        //TOOD: need specifics on display axes
         private SeriesCollection outputData = null; //TODO: rename. The UML calls this "Timeseries of outputs"
         public SeriesCollection OutputData
         {
@@ -90,6 +90,19 @@ namespace FactFeelUI.Client
             set
             {
                 SetProperty(ref currentSequenceID, value);
+            }
+        }
+
+        private double currentPrediction = 0;
+        public double CurrentPrediction
+        {
+            get
+            {
+                return currentPrediction;
+            }
+            set
+            {
+                SetProperty(ref currentPrediction, value);
             }
         }
 

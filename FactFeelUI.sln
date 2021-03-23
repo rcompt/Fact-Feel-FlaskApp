@@ -1,0 +1,107 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactFeelView", "FactFeelView\FactFeelView.csproj", "{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fact-Feel-FlaskApp", "Fact-Feel-FlaskApp", "{224AF694-CD08-4527-826B-82AB4839066D}"
+	ProjectSection(SolutionItems) = preProject
+		main_factfeel.py = main_factfeel.py
+		nltk.txt = nltk.txt
+		Procfile = Procfile
+		README.md = README.md
+		requirements.txt = requirements.txt
+		SpeecToLight_MainApp.py = SpeecToLight_MainApp.py
+		test_app.py = test_app.py
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fact-Feel-App", "Fact-Feel-App", "{77B5C31E-9E02-47EB-ADF0-6B08C0B2334E}"
+	ProjectSection(SolutionItems) = preProject
+		Fact-Feel-App\main_factfeel.py = Fact-Feel-App\main_factfeel.py
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "feature_extraction", "feature_extraction", "{67E61A44-85DE-4402-8981-81EFDCC2D0CA}"
+	ProjectSection(SolutionItems) = preProject
+		Fact-Feel-App\feature_extraction\__init__.py = Fact-Feel-App\feature_extraction\__init__.py
+		Fact-Feel-App\feature_extraction\Fact_Feel_noramlizer.pkl = Fact-Feel-App\feature_extraction\Fact_Feel_noramlizer.pkl
+		Fact-Feel-App\feature_extraction\feature_extractor.py = Fact-Feel-App\feature_extraction\feature_extractor.py
+		Fact-Feel-App\feature_extraction\feature_order.pkl = Fact-Feel-App\feature_extraction\feature_order.pkl
+		Fact-Feel-App\feature_extraction\gather_features_LIWC_Sub_Emo_POS.py = Fact-Feel-App\feature_extraction\gather_features_LIWC_Sub_Emo_POS.py
+		Fact-Feel-App\feature_extraction\liwc_categories.pkl = Fact-Feel-App\feature_extraction\liwc_categories.pkl
+		Fact-Feel-App\feature_extraction\make_normalizer.py = Fact-Feel-App\feature_extraction\make_normalizer.py
+		Fact-Feel-App\feature_extraction\POS_dict.pkl = Fact-Feel-App\feature_extraction\POS_dict.pkl
+		Fact-Feel-App\feature_extraction\punct_feats.pkl = Fact-Feel-App\feature_extraction\punct_feats.pkl
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_pycache_", "_pycache_", "{10907B80-B2E5-4283-A0C6-EFC5F487B6B2}"
+	ProjectSection(SolutionItems) = preProject
+		Fact-Feel-App\feature_extraction\__pycache__\feature_extractor.cpython-35.pyc = Fact-Feel-App\feature_extraction\__pycache__\feature_extractor.cpython-35.pyc
+		Fact-Feel-App\feature_extraction\__pycache__\feature_extractor.cpython-36.pyc = Fact-Feel-App\feature_extraction\__pycache__\feature_extractor.cpython-36.pyc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lexicons", "lexicons", "{DFE0E5D8-E174-464A-B9C9-8872F9A064FA}"
+	ProjectSection(SolutionItems) = preProject
+		Fact-Feel-App\lexicons\__init__.py = Fact-Feel-App\lexicons\__init__.py
+		Fact-Feel-App\lexicons\Emotion-Lexicon-Dictionary.p = Fact-Feel-App\lexicons\Emotion-Lexicon-Dictionary.p
+		Fact-Feel-App\lexicons\Emotion-Lexicon-Dictionary_py3.pkl = Fact-Feel-App\lexicons\Emotion-Lexicon-Dictionary_py3.pkl
+		Fact-Feel-App\lexicons\LIWC2007_English100131.dic = Fact-Feel-App\lexicons\LIWC2007_English100131.dic
+		Fact-Feel-App\lexicons\subjective_lexicon_dic.p = Fact-Feel-App\lexicons\subjective_lexicon_dic.p
+		Fact-Feel-App\lexicons\subjective_lexicon_dic_py3.pkl = Fact-Feel-App\lexicons\subjective_lexicon_dic_py3.pkl
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "model", "model", "{2E88850A-3432-4EAD-B01F-AE973AAFBDAE}"
+	ProjectSection(SolutionItems) = preProject
+		Fact-Feel-App\model\__init__.py = Fact-Feel-App\model\__init__.py
+		Fact-Feel-App\model\Fact_Feel_noramlizer.pkl = Fact-Feel-App\model\Fact_Feel_noramlizer.pkl
+		Fact-Feel-App\model\Fact_Feel_Regression.py = Fact-Feel-App\model\Fact_Feel_Regression.py
+		Fact-Feel-App\model\Linear_Model_qr_emo_liwc_pos_subj_features_Response.p = Fact-Feel-App\model\Linear_Model_qr_emo_liwc_pos_subj_features_Response.p
+		Fact-Feel-App\model\Linear_Model_qr_py3.pkl = Fact-Feel-App\model\Linear_Model_qr_py3.pkl
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_pycache_", "_pycache_", "{636998CB-FFCB-4A18-BADD-107E7AD048D1}"
+	ProjectSection(SolutionItems) = preProject
+		Fact-Feel-App\model\__pycache__\Fact_Feel_Regression.cpython-35.pyc = Fact-Feel-App\model\__pycache__\Fact_Feel_Regression.cpython-35.pyc
+		Fact-Feel-App\model\__pycache__\Fact_Feel_Regression.cpython-36.pyc = Fact-Feel-App\model\__pycache__\Fact_Feel_Regression.cpython-36.pyc
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{3F100B76-37A1-4B50-8A8F-1291D593E12F}"
+	ProjectSection(SolutionItems) = preProject
+		Fact-Feel-App\templates\__init__.py = Fact-Feel-App\templates\__init__.py
+		Fact-Feel-App\templates\home.html = Fact-Feel-App\templates\home.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_pycache_", "_pycache_", "{F0C97D81-837A-49A1-B180-5A7D415CE568}"
+	ProjectSection(SolutionItems) = preProject
+		__pycache__\main_factfeel.cpython-35.pyc = __pycache__\main_factfeel.cpython-35.pyc
+		__pycache__\main_factfeel.cpython-36.pyc = __pycache__\main_factfeel.cpython-36.pyc
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{77B5C31E-9E02-47EB-ADF0-6B08C0B2334E} = {224AF694-CD08-4527-826B-82AB4839066D}
+		{67E61A44-85DE-4402-8981-81EFDCC2D0CA} = {77B5C31E-9E02-47EB-ADF0-6B08C0B2334E}
+		{10907B80-B2E5-4283-A0C6-EFC5F487B6B2} = {67E61A44-85DE-4402-8981-81EFDCC2D0CA}
+		{DFE0E5D8-E174-464A-B9C9-8872F9A064FA} = {77B5C31E-9E02-47EB-ADF0-6B08C0B2334E}
+		{2E88850A-3432-4EAD-B01F-AE973AAFBDAE} = {77B5C31E-9E02-47EB-ADF0-6B08C0B2334E}
+		{636998CB-FFCB-4A18-BADD-107E7AD048D1} = {2E88850A-3432-4EAD-B01F-AE973AAFBDAE}
+		{3F100B76-37A1-4B50-8A8F-1291D593E12F} = {77B5C31E-9E02-47EB-ADF0-6B08C0B2334E}
+		{F0C97D81-837A-49A1-B180-5A7D415CE568} = {224AF694-CD08-4527-826B-82AB4839066D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C53C08E8-5552-4340-85C0-D40532C73E48}
+	EndGlobalSection
+EndGlobal
