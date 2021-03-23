@@ -1,12 +1,17 @@
 ﻿using FactFeelMainView.Utilities;
 using FactFeelUI.Client;
+using FactFeelUI.Resources;
 using FactFeelUI.Server;
+using Newtonsoft.Json;
 using System;
+using System.IO;
 
 namespace FactFeelUI
 {
     public class FactFeelViewModel : ObservableBase
     {
+        private FactFeelConfig Config;
+
         public FactFeelViewModel()
         {
             //TODO: Create config that keeps track of info:
@@ -52,7 +57,9 @@ namespace FactFeelUI
 
         private void ParseConfig()
         {
-            throw new NotImplementedException();
+            string jsonString = File.ReadAllText(Settings.Default.ConfigFileLocation);
+            JsonSerializer jsonSerializer = new JsonSerializer();
+            jsonSerializer.Deserialize<FactFeelConfig>(jsonString);
         }
     }
 }
