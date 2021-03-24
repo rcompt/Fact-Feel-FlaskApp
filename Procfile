@@ -1,0 +1,1 @@
+web: gunicorn --pythonpath Fact-Feel-App main_factfeel:app

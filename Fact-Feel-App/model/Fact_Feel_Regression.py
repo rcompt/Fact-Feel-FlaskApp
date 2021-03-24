@@ -20,13 +20,13 @@ class FactFeelRegressor():
     
     def __init__(self):
         
-        with open(os.path.join("model","Fact_Feel_noramlizer.pkl"),"rb") as f_p:
+        with open(os.path.join(os.getcwd(),"Fact-Feel-App","model","Fact_Feel_noramlizer.pkl"),"rb") as f_p:
             self.normalizer = pickle.load(f_p)
         
         self.model = self.load_model()
         
     def load_model(self):
-        with open(os.path.join("model","Linear_Model_qr_py3.pkl"),"rb") as f_p:
+        with open(os.path.join(os.getcwd(),"Fact-Feel-App","model","Linear_Model_qr_py3.pkl"),"rb") as f_p:
             return pickle.load(f_p,encoding="latin-1")
         
     def predict(self,data):
