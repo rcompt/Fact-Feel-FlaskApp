@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FactFeelMainView.Utilities
+namespace FactFeelUI.Utilities
 {
     /// <summary>
     /// Used to handle the on property change value of any property that inherits from this class.

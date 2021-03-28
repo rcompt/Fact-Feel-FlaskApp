@@ -8,8 +8,11 @@ namespace FactFeelUI.Resources
 {
     public class FactFeelConfig
     {
-        public string PythonExe { get; private set; }
-        public string FileName { get; private set; }
+        public string PythonExe = string.Empty;
+
+        public string FileName = string.Empty;
+
+        public string Function = string.Empty;
 
         public FactFeelConfig()
         {

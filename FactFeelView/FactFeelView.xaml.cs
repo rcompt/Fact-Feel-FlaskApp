@@ -10,6 +10,7 @@ namespace FactFeelUI
         public FactFeelView()
         {
             InitializeComponent();
+            DataContext = new FactFeelViewModel();
         }
     }
 }

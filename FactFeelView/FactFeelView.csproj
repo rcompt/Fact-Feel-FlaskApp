@@ -72,6 +72,7 @@
     </Compile>
     <Compile Include="Server\ServerViewModel.cs" />
     <Compile Include="Utilities\Observable.cs" />
+    <Compile Include="Utilities\PythonWrapper.cs" />
     <Page Include="Client\ClientView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -126,12 +127,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="IronPython">
-      <Version>2.7.11</Version>
-    </PackageReference>
-    <PackageReference Include="IronPython.StdLib">
-      <Version>2.7.11</Version>
-    </PackageReference>
     <PackageReference Include="LiveCharts.Wpf">
       <Version>0.9.7</Version>
     </PackageReference>
@@ -141,4 +136,9 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /y "$(SolutionDir)FactFeelView\Resources\*.json"  "$(SolutionDir)FactFeelView\bin\$(Configuration)\."
+copy /y "$(SolutionDir)FactFeelView\Resources\*.json" "$(SolutionDir)UnitTest.FactFeelView\bin\$(Configuration)\"
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -77,6 +77,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_pycache_", "_pycache_", "{
 		__pycache__\main_factfeel.cpython-36.pyc = __pycache__\main_factfeel.cpython-36.pyc
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest.FactFeelView", "UnitTest.FactFeelView\UnitTest.FactFeelView.csproj", "{C4861213-4727-44AB-8D27-5D56CEDDFBF3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1206CF88-AE6A-4231-8C0B-21BCB5F40D40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4861213-4727-44AB-8D27-5D56CEDDFBF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4861213-4727-44AB-8D27-5D56CEDDFBF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4861213-4727-44AB-8D27-5D56CEDDFBF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4861213-4727-44AB-8D27-5D56CEDDFBF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

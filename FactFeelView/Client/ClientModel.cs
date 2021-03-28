@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FactFeelUI.Resources;
+using FactFeelUI.Utilities;
+using System;
 
 namespace FactFeelUI.Client
 {
@@ -27,11 +24,7 @@ namespace FactFeelUI.Client
         {
             bool retVal = false;
 
-            //Invoke script
-            ProcessStartInfo script = new ProcessStartInfo()
-            {
-                FileName = 
-            };
+            PythonWrapper.InvokeScript(Settings.Default.ConfigFileLocation, ""); //TODO: Fill out
 
             return retVal;
         }

@@ -1,4 +1,4 @@
-﻿using FactFeelMainView.Utilities;
+﻿using FactFeelUI.Utilities;
 using System;
 using LiveCharts;
 using System.Windows.Media;
