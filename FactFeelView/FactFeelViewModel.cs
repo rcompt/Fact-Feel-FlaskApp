@@ -1,23 +1,22 @@
-﻿using FactFeelMainView.Utilities;
-using FactFeelUI.Client;
+﻿using FactFeelUI.Client;
 using FactFeelUI.Resources;
 using FactFeelUI.Server;
 using Newtonsoft.Json;
-using System;
 using System.IO;
+using FactFeelUI.Utilities;
 
 namespace FactFeelUI
 {
     public class FactFeelViewModel : ObservableBase
     {
-        private FactFeelConfig Config;
+        public FactFeelConfig Config;
 
         public FactFeelViewModel()
         {
             //TODO: Create config that keeps track of info:
             //      - Number of physical lights hooked up
             //      - other stuff
-            ParseConfig();
+            ParseConfig(ref Config);
 
             //TODO: Could also prompt the user to enter info at startup:
             //      - How many lights do you have?
@@ -55,11 +54,10 @@ namespace FactFeelUI
             }
         }
 
-        private void ParseConfig()
+        private void ParseConfig(ref FactFeelConfig config)
         {
             string jsonString = File.ReadAllText(Settings.Default.ConfigFileLocation);
-            JsonSerializer jsonSerializer = new JsonSerializer();
-            jsonSerializer.Deserialize<FactFeelConfig>(jsonString);
+            config = JsonConvert.DeserializeObject<FactFeelConfig>(jsonString);
         }
     }
 }
