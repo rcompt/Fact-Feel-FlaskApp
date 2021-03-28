@@ -14,5 +14,10 @@ Flask App for model serving of NLP model determining the level of Factual or Fee
 # Software
 OS: ![Raspbian](https://www.raspberrypi.org/software/)
 
+# DevTools
+Avalonia : https://avaloniaui.net/
+Uno: https://platform.uno/
+.NET Maui: https://devblogs.microsoft.com/dotnet/introducing-net-multi-platform-app-ui/
+
 # Questions:
 
