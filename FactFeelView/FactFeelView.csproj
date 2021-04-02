@@ -8,7 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
-    <Folder Include="Deployment\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0" />
@@ -17,4 +16,7 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
     <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /y &quot;$(SolutionDir)FactFeelView\DeploymentFiles\*.*&quot; &quot;$(SolutionDir)_RaspbianDeployment&quot;&#xD;&#xA;" />
+  </Target>
 </Project>
