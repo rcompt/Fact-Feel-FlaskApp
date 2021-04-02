@@ -2,16 +2,13 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace FactFeelView.Views
+namespace FactFeelUI.Client
 {
-    public class MainWindow : Window
+    public class ClientView : UserControl
     {
-        public MainWindow()
+        public ClientView()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         private void InitializeComponent()
