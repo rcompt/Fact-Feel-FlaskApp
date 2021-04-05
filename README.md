@@ -7,5 +7,12 @@ Flask App for model serving of NLP model determining the level of Factual or Fee
 ## Client - UI UML
 ![](Client-UI.png)
 
+# Hardware
+7" Touch Screen
+![Touch Screen](https://www.adafruit.com/product/2718)
+
+# Software
+OS: ![Raspbian](https://www.raspberrypi.org/software/)
+
 # Questions:
 
