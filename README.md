@@ -21,3 +21,5 @@ Uno: https://platform.uno/
 
 # Questions:
 
+# Notes:
+- 

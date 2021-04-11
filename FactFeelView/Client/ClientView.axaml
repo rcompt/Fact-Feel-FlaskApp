@@ -4,5 +4,25 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FactFeelUI.Client.ClientView">
-  Welcome to Avalonia!
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button Grid.Column="0" Content="Testing"/>
+        <Button Grid.Column="1" Content="Testing"/>
+        <CheckBox Grid.Column="2"/>
+        <ProgressBar Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="4" Margin="10" Height="20"/>
+        
+        
+    </Grid>
+
 </UserControl>

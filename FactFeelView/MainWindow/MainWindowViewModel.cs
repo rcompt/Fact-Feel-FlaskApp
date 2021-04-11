@@ -1,5 +1,4 @@
 using FactFeelUI.Utilities;
-using LiveCharts;
 
 namespace FactFeelUI.MainWindow
 {
