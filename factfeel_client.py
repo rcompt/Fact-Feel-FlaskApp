@@ -3,7 +3,6 @@ from phue import Bridge
 from subprocess import call
 import speech_recognition as sr
 import serial
-import RPi.GPIO as GPIO
 import requests
 import json
   
