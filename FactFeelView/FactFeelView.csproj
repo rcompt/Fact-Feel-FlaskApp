@@ -67,10 +67,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Server\ServerView.xaml.cs">
-      <DependentUpon>ServerView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Server\ServerViewModel.cs" />
     <Compile Include="Utilities\Observable.cs" />
     <Compile Include="Utilities\PythonWrapper.cs" />
     <Page Include="Client\ClientView.xaml">
@@ -89,10 +85,6 @@
       <DependentUpon>FactFeelView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Server\ServerView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FactFeelViewModel.cs" />
@@ -127,6 +119,12 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="IronPython">
+      <Version>2.7.11</Version>
+    </PackageReference>
+    <PackageReference Include="IronPython.StdLib">
+      <Version>2.7.11</Version>
+    </PackageReference>
     <PackageReference Include="LiveCharts.Wpf">
       <Version>0.9.7</Version>
     </PackageReference>

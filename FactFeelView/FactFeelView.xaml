@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:client="clr-namespace:FactFeelUI.Client"
-        xmlns:server="clr-namespace:FactFeelUI.Server"
         mc:Ignorable="d"
         Title="MainWindow" SizeToContent="WidthAndHeight">
     <Grid>
@@ -20,7 +19,6 @@
         </Grid.RowDefinitions>
 
         <client:ClientView DataContext="{Binding ClientViewModel}" Grid.Column="0" Grid.Row="0"/>
-        <server:ServerView DataContext="{Binding ServerViewModel}" Grid.Column="1" Grid.Row="0"/>
-        
+
     </Grid>
 </Window>

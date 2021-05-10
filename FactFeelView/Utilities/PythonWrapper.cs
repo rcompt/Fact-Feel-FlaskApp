@@ -1,28 +1,32 @@
-﻿using System;
+﻿using IronPython.Hosting;
+using Microsoft.Scripting.Hosting;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FactFeelUI.Utilities
 {
     public static class PythonWrapper
     {
+        private static ScriptEngine pythonHost;
+
         public static void InvokeScript(string filePath, string args)
         {
-            ProcessStartInfo processStartInfo = new ProcessStartInfo();
-            processStartInfo.FileName = filePath;
-            processStartInfo.Arguments = string.Format(args);
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.RedirectStandardOutput = true;
+            pythonHost = Python.CreateEngine();
+            Listen();
+        }
 
-            using (Process process = Process.Start(processStartInfo))
-            using (StreamReader reader = process.StandardOutput)
-            {
-                //Grabs the output from the script execution
-            }
+        private static void Listen()
+        {
+            //pythonHost.Runtime.ImportModule("TestClass");
+            ICollection<string> searchPaths = pythonHost.GetSearchPaths();
+            //searchPaths.Add(@"C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python37_64\Lib\");
+            //searchPaths.Add(@"C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python37_64\Lib\site-packages\");
+            //searchPaths.Add(@".\");
+            //pythonHost.SetSearchPaths(searchPaths);
+            dynamic clientScript = pythonHost.Runtime.UseFile("factfeelclient.py");
+            string audioToText = clientScript.listen1();
+            Debug.WriteLine(audioToText);
         }
     }
 }
