@@ -38,7 +38,7 @@ def voice1(audio1):
         print("you said: " + text1)
         return text1
     except sr.UnknownValueError:
-        call(["espeak", "-s140 -ven+18 -z", "Google Speech Recognition could not understand"])
+        #call(["espeak", "-s140 -ven+18 -z", "Google Speech Recognition could not understand"])
         print("Google Speech Recognition could not understand")
         return 0
     except sr.RequestError as e:
