@@ -16,6 +16,13 @@ with sr.Microphone(device_index = 2) as source:
 b = Bridge('192.168.0.186')
 b.connect()
 
+light_names = b.get_light_objects('name')
+lamp_1_color = 50.0
+lamp_2_color = 50.0
+light_names["Desk Lamp 1"].xy = [0,lamp_1_color/100]
+light_names["Desk Lamp 2"].xy = [lamp_2_color/100,0]
+light_names["Desk Lightstrip 1"].xy = [0,0]
+
 def listen1():
     with sr.Microphone(device_index = 2) as source:
         #r.adjust_for_ambient_noise(source)
@@ -38,21 +45,42 @@ def voice1(audio1):
         print("Could not request results from Google")
         return 0
 
+def adjust_lamps(prediction):
+    global light_names
+    global lamp_1_color
+    global lamp_2_color
+    
+    if prediction < 0:
+        lamp_1_color
+        lamp_1_color = lamp_1_color + (abs(prediction)/10)*lamp_1_color
+        if lamp_1_color > 99:
+            lamp_1_color = 99
+        light_names["Desk Lamp 1"].xy = [0,lamp_1_color/100]
+        print(f"Set Lamp 1 to {lamp_1_color}") 
+        
+        lamp_2_color = lamp_2_color - (abs(prediction)/1.25)*lamp_2_color
+        if lamp_2_color < 1:
+            lamp_2_color = 1
+        light_names["Desk Lamp 2"].xy = [lamp_2_color/100,0]
+        print(f"Set Lamp 2 to {lamp_2_color}")
+    elif prediction > 0:
+        lamp_1_color = lamp_1_color - (abs(prediction)/10)*lamp_1_color
+        if lamp_1_color < 1:
+            lamp_1_color = 1
+        light_names["Desk Lamp 1"].xy = [0,lamp_1_color/100]
+        print(f"Set Lamp 1 to {lamp_1_color}")
+        
+        lamp_2_color = lamp_2_color + (abs(prediction)/1.25)*lamp_2_color
+        if lamp_2_color > 99:
+            lamp_2_color = 99
+        light_names["Desk Lamp 2"].xy = [lamp_2_color/100,0]
+        print(f"Set Lamp 2 to {lamp_2_color}")
+
+
 if __name__ == "__main__":
     
-
     all_text = {}
     seq = 1
-
-    light_names = b.get_light_objects('name')
-    lamp_1_color = 50.0
-    lamp_2_color = 50.0
-    light_names["Desk Lamp 1"].xy = [0,lamp_1_color/100]
-    light_names["Desk Lamp 2"].xy = [lamp_2_color/100,0]
-    light_names["Desk Lightstrip 1"].xy = [0,0]
-    
-    
-    
     
     while(1):
         audio1 = listen1()
@@ -77,32 +105,8 @@ if __name__ == "__main__":
             prediction = response_data["prediction"][0]
             all_text[seq]["PRED"] = prediction
             print(f"Recieved prediction of {prediction}")
-            
-            if prediction < 0:
-                lamp_1_color
-                lamp_1_color = lamp_1_color + (abs(prediction)/10)*lamp_1_color
-                if lamp_1_color > 99:
-                    lamp_1_color = 99
-                light_names["Desk Lamp 1"].xy = [0,lamp_1_color/100]
-                print(f"Set Lamp 1 to {lamp_1_color}") 
-                
-                lamp_2_color = lamp_2_color - (abs(prediction)/1.25)*lamp_2_color
-                if lamp_2_color < 1:
-                    lamp_2_color = 1
-                light_names["Desk Lamp 2"].xy = [lamp_2_color/100,0]
-                print(f"Set Lamp 2 to {lamp_2_color}")
-            elif prediction > 0:
-                lamp_1_color = lamp_1_color - (abs(prediction)/10)*lamp_1_color
-                if lamp_1_color < 1:
-                    lamp_1_color = 1
-                light_names["Desk Lamp 1"].xy = [0,lamp_1_color/100]
-                print(f"Set Lamp 1 to {lamp_1_color}")
-                
-                lamp_2_color = lamp_2_color + (abs(prediction)/1.25)*lamp_2_color
-                if lamp_2_color > 99:
-                    lamp_2_color = 99
-                light_names["Desk Lamp 2"].xy = [lamp_2_color/100,0]
-                print(f"Set Lamp 2 to {lamp_2_color}")
+            adjust_lamps(prediction)
+
         else:
             print("Skipping due to issues with response from Google")
         seq += 1
