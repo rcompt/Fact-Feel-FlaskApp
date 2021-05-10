@@ -26,7 +26,7 @@ namespace FactFeelUI.Client
             }
         }
 
-        //TOOD: need specifics on display axes
+        ////TOOD: need specifics on display axes
         private SeriesCollection outputData = null; //TODO: rename. The UML calls this "Timeseries of outputs"
         public SeriesCollection OutputData
         {
