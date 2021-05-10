@@ -1,7 +1,7 @@
 dill==0.2.5
 Django==1.11.29
 Flask==1.0
-Flask-Cors==2.1.2
+Flask-Cors==3.0.9
 numpy==1.18.5
 numpydoc==0.6.0
 pandas==0.25.3
