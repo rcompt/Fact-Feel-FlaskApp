@@ -16,27 +16,60 @@ with sr.Microphone(device_index = 2) as source:
 b = Bridge('192.168.0.186')
 b.connect()
 
-def listen1():
+class LightOrchestrator:
+    def __init__(self, bridge):
+        
+        self.bridge = bridge
+        
+        self.light_objs = self.bridge.get_light_objects('name')
+        self.lamp_colors = {name : 50.0 for name in light_objs}
+        
+        self.left = "Desk Lamp 1"
+        self.right = "Desk Lamp 2"
+        self.center = "Desk Lightstrip 1"
+        
+        self.light_objs[self.left].xy = [0, self.lamp_colors[self.left] / 100]
+        self.light_objs[self.right].xy = [self.lamp_colors[self.right] / 100, 0]
+        self.light_objs[self.center].xy = [0,0]
+
+def listen(duration):
+    '''
+    listen: Record audio for the given 'duration' in seconds
+    Param
+        duration: int
+    return
+        audio: <Unknown!!!>
+    '''
     with sr.Microphone(device_index = 2) as source:
         #r.adjust_for_ambient_noise(source)
         print("Say Something")
-        audio = r.record(source,duration=15)
+        audio = r.record(source,duration=duration)
         print("got it")
     return audio
 
-def voice1(audio1):
+def voice(audio):
+    '''
+    voice: Given an audio <unknown type>, send to Google api for speech to text response
+    Param
+        audio: <Unknown!!!>
+    return
+        text: str if pass else int
+    '''
     try:
-        text1 = r.recognize_google(audio1)
+        text = r.recognize_google(audio)
         ## call('espeak ' + text, shell = True)
-        print("you said: " + text1)
-        return text1
+        print("you said: " + text)
+        return text
     except sr.UnknownValueError:
-        call(["espeak", "-s140 -ven+18 -z", "Google Speech Recognition could not understand"])
+        call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
         print("Google Speech Recognition could not understand")
         return 0
     except sr.RequestError as e:
         print("Could not request results from Google")
         return 0
+    
+    
+
 
 if __name__ == "__main__":
     
@@ -44,15 +77,8 @@ if __name__ == "__main__":
     all_text = {}
     seq = 1
 
-    light_names = b.get_light_objects('name')
-    lamp_1_color = 50.0
-    lamp_2_color = 50.0
-    light_names["Desk Lamp 1"].xy = [0,lamp_1_color/100]
-    light_names["Desk Lamp 2"].xy = [lamp_2_color/100,0]
-    light_names["Desk Lightstrip 1"].xy = [0,0]
-    
-    
-    
+    light_orchestrator = LightOrchestrator(b)
+  
     
     while(1):
         audio1 = listen1()
