@@ -8,26 +8,27 @@ Created on Fri Dec  6 15:10:10 2019
 import pickle
 import os
 
-#Temporary fix, need to provide main project path
-#TODO: Fix need for absolute paths on importing other scripts
-#os.chdir("C:\\Users\\Ryan\\Documents\\Projects\\Fact-Feel-FlaskApp")
-
-from sklearn import linear_model
-
 from feature_extraction.feature_extractor import FeatureExtractor
+
+feature_extract_path = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(
+    feature_extract_path.split("Fact-Feel-App")[0],
+    "Fact-Feel-App",
+    "model"
+    )
 
 class FactFeelRegressor():
     
     def __init__(self):
         
-        with open(os.path.join(os.getcwd(),"Fact-Feel-App","model","Fact_Feel_noramlizer.pkl"),"rb") as f_p:
+        with open(os.path.join(model_path,"Fact_Feel_noramlizer.pkl"),"rb") as f_p:
             self.normalizer = pickle.load(f_p)
         
         self.model = self.load_model()
         
     def load_model(self):
-        with open(os.path.join(os.getcwd(),"Fact-Feel-App","model","Linear_Model_qr_py3.pkl"),"rb") as f_p:
-            return pickle.load(f_p,encoding="latin-1")
+        with open(os.path.join(model_path,"Linear_Model_qr_py3.pkl"),"rb") as f_p:
+            return pickle.load(f_p)
         
     def predict(self,data):
         t_data = self.normalizer.transform(data)
