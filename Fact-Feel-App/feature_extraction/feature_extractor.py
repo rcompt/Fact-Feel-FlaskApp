@@ -23,13 +23,16 @@ import numpy as np
 
 from nltk.stem import WordNetLemmatizer
 
-#os.chdir("C:\\Users\\Ryan\\Documents\\Projects\\Fact-Feel-FlaskApp")
-
 import re
 import string
 from collections import Counter, defaultdict
 from string import punctuation
 
+feature_extract_path = os.path.dirname(os.path.abspath(__file__))
+lexicon_path = os.path.join(
+    feature_extract_path.split("Fact-Feel-App")[0], 
+    "Fact-Feel-App",
+    "lexicons")
 
 class Dictionary():
     sentence_punctuation = {'.', '?', '!', '\n'}
@@ -304,7 +307,7 @@ class Dictionary():
 
 
 feat_list_model_order = None
-with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","feature_order.pkl"),"rb") as f_p:
+with open(os.path.join(feature_extract_path, "feature_order.pkl"),"rb") as f_p:
     feat_list_model_order = pickle.load(f_p)
 
 #feat_list_model_order = [
@@ -440,7 +443,7 @@ with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","feature
 #        ]
 
 POS = None
-with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","POS_dict.pkl"),"rb") as f_p:
+with open(os.path.join(feature_extract_path,"POS_dict.pkl"),"rb") as f_p:
     POS = pickle.load(f_p)
 
 #POS = {"JJ":"adj",
@@ -464,7 +467,7 @@ with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","POS_dic
 #        }
 
 punct_feats = None
-with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","punct_feats.pkl"),"rb") as f_p:
+with open(os.path.join(feature_extract_path,"punct_feats.pkl"),"rb") as f_p:
     punct_feats = pickle.load(f_p)
 
 #punct_feats = {
@@ -522,7 +525,7 @@ subj_cats = ["weak-negative","strong-negative","weak-positive","strong-positive"
 
 
 _liwc_categories = None
-with open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","liwc_categories.pkl"),"rb") as f_p:
+with open(os.path.join(feature_extract_path,"liwc_categories.pkl"),"rb") as f_p:
     _liwc_categories = pickle.load(f_p)
 
 #_liwc_categories = [
@@ -698,16 +701,16 @@ class FeatureExtractor():
         self.glob_word = ""
         
     def _load_lexicons(self):
-        self.subj_dic = pickle.load(open(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons",'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
+        self.subj_dic = pickle.load(open(os.path.join(lexicon_path,'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
         self._dictionary = None
         self.load_dictionary(self.default_dictionary_filename())
         #Load the emotion lexicon dictionary
-        p_file = open(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons","Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
+        p_file = open(os.path.join(lexicon_path,"Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
         self.emo_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
         #Load the subjective lexicon dictionary
-        p_file = open(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons","subjective_lexicon_dic_py3.pkl"),"rb")
+        p_file = open(os.path.join(lexicon_path,"subjective_lexicon_dic_py3.pkl"),"rb")
         self.subj_dic = pickle.load(p_file,encoding="latin-1")
         p_file.close()
         
@@ -728,13 +731,13 @@ class FeatureExtractor():
                          'Weak-subjective':['weak-negative','weak-positive']
                          }
         
-        p_file = open(os.path.join(os.getcwd(),"Fact-Feel-App","feature_extraction","feature_order.pkl"),"rb")
+        p_file = open(os.path.join(feature_extract_path,"feature_order.pkl"),"rb")
         self.feat_order = pickle.load(p_file)
         p_file.close()
         
 
     def default_dictionary_filename(self):
-        return os.path.abspath(os.path.join(os.getcwd(),"Fact-Feel-App","lexicons","LIWC2007_English100131.dic"))
+        return os.path.abspath(os.path.join(lexicon_path,"LIWC2007_English100131.dic"))
     
     def load_dictionary(self,filename):
         self._dictionary = Dictionary(filename)
@@ -783,7 +786,7 @@ class FeatureExtractor():
             feats[feat] = 0.0
         
     		#Use pattern.tag to get POS tags
-        tags = nltk.pos_tag(text)
+        tags = nltk.pos_tag(nltk.word_tokenize(text))
     		#Gather only the tags from the output of pattern.tag
         ptags = [t for w,t in tags]
     		#Dictionary used for hold the counts for each POS tag

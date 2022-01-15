@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
     light_orchestrator = LightOrchestrator()
     listener = SpeechToText()
-    fact_feel = FactFeelApi()
+    fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
     
     while(1):
         
