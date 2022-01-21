@@ -9,10 +9,9 @@ import json
 
 class LightOrchestrator:
     
-    def __init__(self):
-        
-        self.bridge = Bridge('192.168.0.186')
-        self.bridge.connect()
+    def __init__(self, ip):
+        self.set_ip(ip)
+        self.connect_to_bridge()
         
         self.light_objs = self.bridge.get_light_objects('name')
         self.lamp_colors = {name : 50.0 for name in self.light_objs}
@@ -22,6 +21,13 @@ class LightOrchestrator:
         self.center = "Desk Lightstrip 1"
         
         self.set_colors()
+        
+    def set_ip(self, ip):
+        self.ip = ip
+        
+    def connect_to_bridge(self):
+        self.bridge = Bridge(self.ip)
+        self.bridge.connect()
         
     def set_colors(self):
         
