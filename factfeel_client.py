@@ -9,18 +9,19 @@ import json
 
 class LightOrchestrator:
     
-    def __init__(self, ip):
-        self.set_ip(ip)
-        self.connect_to_bridge()
+    def __init__(self, ip = None, lights = None, colors = None):
+        if ip:
+            self.set_ip(ip)
+            self.connect_to_bridge()
         
-        self.light_objs = self.bridge.get_light_objects('name')
-        self.lamp_colors = {name : 50.0 for name in self.light_objs}
-        
-        self.left = "Desk Lamp 1"
-        self.right = "Desk Lamp 2"
-        self.center = "Desk Lightstrip 1"
-        
-        self.set_colors()
+            if lights:
+                self.set_lights(lights)
+                
+            if colors:
+                self.set_base_colors(colors[0], colors[1])
+                self.set_colors()
+                self.set_color_spectrum()
+                self.set_colors()
         
     def set_ip(self, ip):
         self.ip = ip
@@ -29,34 +30,91 @@ class LightOrchestrator:
         self.bridge = Bridge(self.ip)
         self.bridge.connect()
         
-    def set_colors(self):
+    def set_lights(self, lights):
+        self.num_lights = len(lights)
+        self.light_order = lights
+        self.light_objs = self.bridge.get_light_objects('name')
+        self.lamp_colors = {name : [0, 0] for name in self.light_objs}
         
-        self.light_objs[self.left].xy = [0, self.lamp_colors[self.left] / 100]
-        self.light_objs[self.right].xy = [self.lamp_colors[self.right] / 100, 0]
-        self.light_objs[self.center].xy = [0,0]
-        print(f"Set Lamp 1 to {self.lamp_colors[self.left]}")
-        print(f"Set Lamp 2 to {self.lamp_colors[self.right]}")
+        for light in self.light_order:
+            if light not in self.lamp_colors:
+                raise NameError(f'Light named {light} does not exist on the Hue Bridge!')
+        
+    def set_base_colors(self, fact_base, feel_base):
+        self.fact_base_color = fact_base
+        self.feel_base_color = feel_base
+        
+        self.begining_boarder = self.fact_base_color
+        self.ending_boarder = self.feel_base_color
+        
+        self.min_x = min(fact_base[0], feel_base[0])
+        self.max_x = max(fact_base[0], feel_base[0])
+        self.min_y = min(fact_base[1], feel_base[1])
+        self.max_y = max(fact_base[1], feel_base[1])
+        
+        self.x_step_size = -1 * ((self.fact_base_color[0] - self.feel_base_color[0]) / (self.num_lights / 10))
+        self.y_step_size = -1 * ((self.fact_base_color[1] - self.feel_base_color[1]) / (self.num_lights / 10))
+        
+    def set_colors(self):
+        for idx, light in enumerate(self.light_order):
+            self.light_objs[light].xy = self.lamp_colors[light]
+            print(f"Setting {light} to {self.lamp_colors[light]}")
+        
+    def set_color_spectrum(self):
+        
+        x_step_size = -1 * ((self.begining_boarder[0] - self.ending_boarder[0]) / (self.num_lights))
+        y_step_size = -1 * ((self.begining_boarder[1] - self.ending_boarder[1]) / (self.num_lights))
+        
+        for idx, light in enumerate(self.light_order):
+            
+            print(f"Setting {light}")
+            
+            print("Old X: {self.begining_boarder[0]}")
+            x = self.begining_boarder[0] + (x_step_size * idx) 
+            print("New X: {x}")
+            if x <= self.min_x:
+                x = self.min_x
+            if x >= self.max_x:
+                x = self.max_x
+
+            print("Old Y: {self.begining_boarder[1]}")
+            y = self.begining_boarder[1] + (y_step_size * idx) 
+            print("New Y: {y}")
+            if y <= self.min_y:
+                y = self.min_y
+            if y >= self.max_y:
+                y = self.max_y
+            
+            self.lamp_colors[light] = [x, y]    
         
     def fact_feel_modify_lights(self, prediction):
         
         if prediction < 0:
-            self.lamp_colors[self.left] = self.lamp_colors[self.left] + (abs(prediction)/10)*self.lamp_colors[self.left]
-            if self.lamp_colors[self.left] > 99:
-                self.lamp_colors[self.left] = 99
-             
-            self.lamp_colors[self.right] = self.lamp_colors[self.right] - (abs(prediction)/1.25)*self.lamp_colors[self.right]
-            if self.lamp_colors[self.right] < 1:
-                self.lamp_colors[self.right] = 1
+            self.begining_boarder[0] = self.begining_boarder[0] + (self.x_step_size)
+            self.begining_boarder[1] = self.begining_boarder[1] + (self.y_step_size)
+            if self.begining_boarder[0] <= self.min_x:
+                self.begining_boarder[0] = self.min_x
+            if self.begining_boarder[0] >= self.max_x:
+                self.begining_boarder[0] = self.max_x  
+            if self.begining_boarder[1] <= self.min_y:
+                self.begining_boarder[1] = self.min_y
+            if self.begining_boarder[1] >= self.max_y:
+                self.begining_boarder[1] = self.max_y
+
             
         elif prediction > 0:
-            self.lamp_colors[self.left] = self.lamp_colors[self.left] - (abs(prediction)/10)*self.lamp_colors[self.left]
-            if self.lamp_colors[self.left] < 1:
-                self.lamp_colors[self.left] = 1
-            
-            self.lamp_colors[self.right] = self.lamp_colors[self.right] + (abs(prediction)/1.25)*self.lamp_colors[self.right]
-            if self.lamp_colors[self.right] > 99:
-                self.lamp_colors[self.right] = 99
+            self.ending_boarder[0] = self.ending_boarder[0] + (self.x_step_size)
+            self.ending_boarder[1] = self.ending_boarder[1] + (self.y_step_size)
+            if self.ending_boarder[0] <= self.min_x:
+                self.ending_boarder[0] = self.min_x
+            if self.ending_boarder[0] >= self.max_x:
+                self.ending_boarder[0] = self.max_x  
+            if self.ending_boarder[1] <= self.min_y:
+                self.ending_boarder[1] = self.min_y
+            if self.ending_boarder[1] >= self.max_y:
+                self.ending_boarder[1] = self.max_y
         
+        self.set_color_spectrum()
         self.set_colors()
 
 
@@ -184,11 +242,21 @@ def voice(audio):
 
 
 if __name__ == "__main__":
-    
     all_text = {}
     seq = 1
 
-    light_orchestrator = LightOrchestrator()
+    light_orchestrator = LightOrchestrator(
+        ip = '192.168.0.186',
+        lights = [
+            "Desk Lamp 1",
+            "Desk Lightstrip 1",
+            "Desk Lamp 2"
+            ],
+        colors = [
+            [0.3227, 0.3290], # White
+            [0.643, 0.3045]   # Dark Red
+            ]
+        )
     listener = SpeechToText()
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
     
