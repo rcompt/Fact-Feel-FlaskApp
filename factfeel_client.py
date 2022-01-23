@@ -1,6 +1,7 @@
 # imports
 from phue import Bridge
 from subprocess import call
+import numpy as np
 import speech_recognition as sr
 import serial
 import requests
@@ -9,7 +10,10 @@ import json
 
 class LightOrchestrator:
     
-    def __init__(self, ip = None, lights = None, colors = None):
+    def __init__(self, ip = None, lights = None, colors = None, spectrum_size = 11):
+        
+        self.spectrum_size = spectrum_size
+        
         if ip:
             self.set_ip(ip)
             self.connect_to_bridge()
@@ -43,17 +47,7 @@ class LightOrchestrator:
     def set_base_colors(self, fact_base, feel_base):
         self.fact_base_color = fact_base
         self.feel_base_color = feel_base
-        
-        self.begining_boarder = self.fact_base_color
-        self.ending_boarder = self.feel_base_color
-        
-        self.min_x = min(fact_base[0], feel_base[0])
-        self.max_x = max(fact_base[0], feel_base[0])
-        self.min_y = min(fact_base[1], feel_base[1])
-        self.max_y = max(fact_base[1], feel_base[1])
-        
-        self.x_step_size = -1 * ((self.fact_base_color[0] - self.feel_base_color[0]) / (self.num_lights / 10))
-        self.y_step_size = -1 * ((self.fact_base_color[1] - self.feel_base_color[1]) / (self.num_lights / 10))
+    
         
     def set_colors(self):
         for idx, light in enumerate(self.light_order):
@@ -62,59 +56,47 @@ class LightOrchestrator:
         
     def set_color_spectrum(self):
         
-        x_step_size = -1 * ((self.begining_boarder[0] - self.ending_boarder[0]) / (self.num_lights))
-        y_step_size = -1 * ((self.begining_boarder[1] - self.ending_boarder[1]) / (self.num_lights))
+        x_step_size = -1 * (self.fact_base_color[0] - self.feel_base_color[0]) / (self.spectrum_size - 2)
+        y_step_size = -1 * (self.fact_base_color[1] - self.feel_base_color[1]) / (self.spectrum_size - 2)
+        print(f"X Step Size: {x_step_size}")
+        print(f"Y Step Size: {y_step_size}")
         
-        for idx, light in enumerate(self.light_order):
-            
-            print(f"Setting {light}")
-            
-            print("Old X: {self.begining_boarder[0]}")
-            x = self.begining_boarder[0] + (x_step_size * idx) 
-            print("New X: {x}")
-            if x <= self.min_x:
-                x = self.min_x
-            if x >= self.max_x:
-                x = self.max_x
-
-            print("Old Y: {self.begining_boarder[1]}")
-            y = self.begining_boarder[1] + (y_step_size * idx) 
-            print("New Y: {y}")
-            if y <= self.min_y:
-                y = self.min_y
-            if y >= self.max_y:
-                y = self.max_y
-            
-            self.lamp_colors[light] = [x, y]    
+        x_range = np.arange(self.fact_base_color[0], self.feel_base_color[0] + x_step_size, x_step_size)
+        y_range = np.arange(self.fact_base_color[1], self.feel_base_color[1] + y_step_size, y_step_size)
         
+        self.spectrum = list(zip(x_range, y_range))
+        self.lamp_spectrum_state = {}
+        
+        if len(self.light_order) == 1:
+            self.lamp_spectrum_state[self.light_order[0]] = int(len(self.spectrum) / 2)
+        else:
+            for idx, light in enumerate(self.light_order):
+                self.lamp_spectrum_state[light] = int(len(self.spectrum) / self.num_lights) * idx
+        
+        self.spectrum_to_color()
+    
+    def spectrum_to_color(self):
+        if len(self.light_order) == 1:
+            self.lamp_colors[self.light_order[0]] = self.spectrum[self.lamp_spectrum_state[self.light_order[0]]]
+        else:
+            for idx, light in enumerate(self.light_order):
+                self.lamp_colors[light] = self.spectrum[self.lamp_spectrum_state[light]]
+            
+    
     def fact_feel_modify_lights(self, prediction):
         
         if prediction < 0:
-            self.begining_boarder[0] = self.begining_boarder[0] + (self.x_step_size)
-            self.begining_boarder[1] = self.begining_boarder[1] + (self.y_step_size)
-            if self.begining_boarder[0] <= self.min_x:
-                self.begining_boarder[0] = self.min_x
-            if self.begining_boarder[0] >= self.max_x:
-                self.begining_boarder[0] = self.max_x  
-            if self.begining_boarder[1] <= self.min_y:
-                self.begining_boarder[1] = self.min_y
-            if self.begining_boarder[1] >= self.max_y:
-                self.begining_boarder[1] = self.max_y
-
+            step_size = -1 + int(prediction)
+        else:
+            step_size = 1 + int(prediction)
             
-        elif prediction > 0:
-            self.ending_boarder[0] = self.ending_boarder[0] + (self.x_step_size)
-            self.ending_boarder[1] = self.ending_boarder[1] + (self.y_step_size)
-            if self.ending_boarder[0] <= self.min_x:
-                self.ending_boarder[0] = self.min_x
-            if self.ending_boarder[0] >= self.max_x:
-                self.ending_boarder[0] = self.max_x  
-            if self.ending_boarder[1] <= self.min_y:
-                self.ending_boarder[1] = self.min_y
-            if self.ending_boarder[1] >= self.max_y:
-                self.ending_boarder[1] = self.max_y
-        
-        self.set_color_spectrum()
+        if self.num_lights == 1:
+            self.lamp_spectrum_state[self.light_order[0]] = self.lamp_spectrum_state[self.light_order[0]] + step_size
+        else:
+            for idx, light in enumerate(self.light_order):
+                self.lamp_spectrum_state[self.light_order[idx]] = self.lamp_spectrum_state[self.light_order[idx]] + step_size
+                
+        self.spectrum_to_color()
         self.set_colors()
 
 
