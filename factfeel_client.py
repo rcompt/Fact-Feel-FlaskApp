@@ -137,15 +137,14 @@ class SpeechToText:
             print("you said: " + text)
             return text
         except sr.UnknownValueError:
-            call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
+            ## call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
             print("Google Speech Recognition could not understand")
             return 0
         except sr.RequestError as e:
-            print("Could not request results from Google")
+            print(f"Could not request results from Google: {e}")
             return 0
     
     def listen_transcribe(self, duration = 15):
-        
         return self._voice(self._listen(duration))
     
 class FactFeelApi:
@@ -163,7 +162,7 @@ class FactFeelApi:
             'SEQ' : self.seq
            }
         
-        self.all_text[seq] = text_elem
+        self.all_text[self.seq] = text_elem
         
         data = {
             'TEXT' : text
@@ -179,49 +178,9 @@ class FactFeelApi:
         
         prediction = response_data["prediction"][0]
         
-        self.all_text[seq]["PRED"] = prediction
+        self.all_text[self.seq]["PRED"] = prediction
         
         return prediction
-
-def listen(duration):
-    '''
-    listen: Record audio for the given 'duration' in seconds
-    Param
-        duration: int
-    return
-        audio: <Unknown!!!>
-    '''
-    with sr.Microphone(device_index = 2) as source:
-        #r.adjust_for_ambient_noise(source)
-        print("Say Something")
-        audio = r.record(source,duration=duration)
-        print("got it")
-        
-    return audio
-
-def voice(audio):
-    '''
-    voice: Given an audio <unknown type>, send to Google api for speech to text response
-    Param
-        audio: <Unknown!!!>
-    return
-        text: str if pass else int
-    '''
-    try:
-        text = r.recognize_google(audio)
-        ## call('espeak ' + text, shell = True)
-        print("you said: " + text)
-        return text
-    except sr.UnknownValueError:
-        call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
-        print("Google Speech Recognition could not understand")
-        return 0
-    except sr.RequestError as e:
-        print("Could not request results from Google")
-        return 0
-    
-
-
 
 if __name__ == "__main__":
     all_text = {}
