@@ -151,11 +151,12 @@ class SpeechToText:
     
 class FactFeelApi:
     
-    def __init__(self, url = "https://fact-feel-flaskapp.herokuapp.com/predict"):
+    def __init__(self, url = "https://fact-feel-flaskapp.herokuapp.com/predict", plot_show = True):
         # define the fact feel model api url  
         self.fact_feel_url = url
         self.seq = 1
         self.fact_feel_text_data = {}
+        self.plot_show = plot_show
         
         plt.style.use("fivethirtyeight")
         
@@ -184,7 +185,8 @@ class FactFeelApi:
         
         self.fact_feel_text_data[self.seq]["PRED"] = prediction
         
-        self.plot()
+        if self.plot_show:
+            self.plot()
         
         self.seq += 1
         
@@ -193,8 +195,12 @@ class FactFeelApi:
     def plot(self):
         y = [self.fact_feel_text_data[seq]["PRED"] for seq in self.fact_feel_text_data]
         x = [seq for seq in self.fact_feel_text_data]
-        plt.plot(x, y)
-        plt.show()
+        fig = plt.plot(x, y)
+        
+        if self.plot_show:
+           plt.show()
+        else:
+            return fig
 
 if __name__ == "__main__":
     all_text = {}
