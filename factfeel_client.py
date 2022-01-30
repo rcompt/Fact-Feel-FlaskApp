@@ -1,6 +1,7 @@
 # imports
 from phue import Bridge
 from subprocess import call
+import numpy as np
 import speech_recognition as sr
 import serial
 import requests
@@ -9,48 +10,93 @@ import json
 
 class LightOrchestrator:
     
-    def __init__(self):
+    def __init__(self, ip = None, lights = None, colors = None, spectrum_size = 11):
         
-        self.bridge = Bridge('192.168.0.186')
+        self.spectrum_size = spectrum_size
+        
+        if ip:
+            self.set_ip(ip)
+            self.connect_to_bridge()
+        
+            if lights:
+                self.set_lights(lights)
+                
+            if colors:
+                self.set_base_colors(colors[0], colors[1])
+                self.set_colors()
+                self.set_color_spectrum()
+                self.set_colors()
+        
+    def set_ip(self, ip):
+        self.ip = ip
+        
+    def connect_to_bridge(self):
+        self.bridge = Bridge(self.ip)
         self.bridge.connect()
         
+    def set_lights(self, lights):
+        self.num_lights = len(lights)
+        self.light_order = lights
         self.light_objs = self.bridge.get_light_objects('name')
-        self.lamp_colors = {name : 50.0 for name in self.light_objs}
+        self.lamp_colors = {name : [0, 0] for name in self.light_objs}
         
-        self.left = "Desk Lamp 1"
-        self.right = "Desk Lamp 2"
-        self.center = "Desk Lightstrip 1"
+        for light in self.light_order:
+            if light not in self.lamp_colors:
+                raise NameError(f'Light named {light} does not exist on the Hue Bridge!')
         
-        self.set_colors()
+    def set_base_colors(self, fact_base, feel_base):
+        self.fact_base_color = fact_base
+        self.feel_base_color = feel_base
+    
         
     def set_colors(self):
+        for idx, light in enumerate(self.light_order):
+            self.light_objs[light].xy = self.lamp_colors[light]
+            print(f"Setting {light} to {self.lamp_colors[light]}")
         
-        self.light_objs[self.left].xy = [0, self.lamp_colors[self.left] / 100]
-        self.light_objs[self.right].xy = [self.lamp_colors[self.right] / 100, 0]
-        self.light_objs[self.center].xy = [0,0]
-        print(f"Set Lamp 1 to {self.lamp_colors[self.left]}")
-        print(f"Set Lamp 2 to {self.lamp_colors[self.right]}")
+    def set_color_spectrum(self):
         
+        x_step_size = -1 * (self.fact_base_color[0] - self.feel_base_color[0]) / (self.spectrum_size - 2)
+        y_step_size = -1 * (self.fact_base_color[1] - self.feel_base_color[1]) / (self.spectrum_size - 2)
+        print(f"X Step Size: {x_step_size}")
+        print(f"Y Step Size: {y_step_size}")
+        
+        x_range = np.arange(self.fact_base_color[0], self.feel_base_color[0] + x_step_size, x_step_size)
+        y_range = np.arange(self.fact_base_color[1], self.feel_base_color[1] + y_step_size, y_step_size)
+        
+        self.spectrum = list(zip(x_range, y_range))
+        self.lamp_spectrum_state = {}
+        
+        if len(self.light_order) == 1:
+            self.lamp_spectrum_state[self.light_order[0]] = int(len(self.spectrum) / 2)
+        else:
+            for idx, light in enumerate(self.light_order):
+                self.lamp_spectrum_state[light] = int(len(self.spectrum) / self.num_lights) * idx
+        
+        self.spectrum_to_color()
+    
+    def spectrum_to_color(self):
+        if len(self.light_order) == 1:
+            self.lamp_colors[self.light_order[0]] = self.spectrum[self.lamp_spectrum_state[self.light_order[0]]]
+        else:
+            for idx, light in enumerate(self.light_order):
+                self.lamp_colors[light] = self.spectrum[self.lamp_spectrum_state[light]]
+            
+    
     def fact_feel_modify_lights(self, prediction):
         
         if prediction < 0:
-            self.lamp_colors[self.left] = self.lamp_colors[self.left] + (abs(prediction)/10)*self.lamp_colors[self.left]
-            if self.lamp_colors[self.left] > 99:
-                self.lamp_colors[self.left] = 99
-             
-            self.lamp_colors[self.right] = self.lamp_colors[self.right] - (abs(prediction)/1.25)*self.lamp_colors[self.right]
-            if self.lamp_colors[self.right] < 1:
-                self.lamp_colors[self.right] = 1
+            step_size = -1 + int(prediction)
+        else:
+            step_size = 1 + int(prediction)
             
-        elif prediction > 0:
-            self.lamp_colors[self.left] = self.lamp_colors[self.left] - (abs(prediction)/10)*self.lamp_colors[self.left]
-            if self.lamp_colors[self.left] < 1:
-                self.lamp_colors[self.left] = 1
-            
-            self.lamp_colors[self.right] = self.lamp_colors[self.right] + (abs(prediction)/1.25)*self.lamp_colors[self.right]
-            if self.lamp_colors[self.right] > 99:
-                self.lamp_colors[self.right] = 99
-        
+        if self.num_lights == 1:
+            self.lamp_spectrum_state[self.light_order[0]] = self.lamp_spectrum_state[self.light_order[0]] + step_size
+        else:
+            for idx, light in enumerate(self.light_order):
+                self.lamp_spectrum_state[self.light_order[idx]] = self.lamp_spectrum_state[self.light_order[idx]] + step_size
+                
+        self.spectrum_to_color()
         self.set_colors()
 
 
@@ -91,15 +137,14 @@ class SpeechToText:
             print("you said: " + text)
             return text
         except sr.UnknownValueError:
-            call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
+            ## call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
             print("Google Speech Recognition could not understand")
             return 0
         except sr.RequestError as e:
-            print("Could not request results from Google")
+            print(f"Could not request results from Google: {e}")
             return 0
     
     def listen_transcribe(self, duration = 15):
-        
         return self._voice(self._listen(duration))
     
 class FactFeelApi:
@@ -117,7 +162,7 @@ class FactFeelApi:
             'SEQ' : self.seq
            }
         
-        self.all_text[seq] = text_elem
+        self.all_text[self.seq] = text_elem
         
         data = {
             'TEXT' : text
@@ -133,56 +178,26 @@ class FactFeelApi:
         
         prediction = response_data["prediction"][0]
         
-        self.all_text[seq]["PRED"] = prediction
+        self.all_text[self.seq]["PRED"] = prediction
         
         return prediction
 
-def listen(duration):
-    '''
-    listen: Record audio for the given 'duration' in seconds
-    Param
-        duration: int
-    return
-        audio: <Unknown!!!>
-    '''
-    with sr.Microphone(device_index = 2) as source:
-        #r.adjust_for_ambient_noise(source)
-        print("Say Something")
-        audio = r.record(source,duration=duration)
-        print("got it")
-        
-    return audio
-
-def voice(audio):
-    '''
-    voice: Given an audio <unknown type>, send to Google api for speech to text response
-    Param
-        audio: <Unknown!!!>
-    return
-        text: str if pass else int
-    '''
-    try:
-        text = r.recognize_google(audio)
-        ## call('espeak ' + text, shell = True)
-        print("you said: " + text)
-        return text
-    except sr.UnknownValueError:
-        call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
-        print("Google Speech Recognition could not understand")
-        return 0
-    except sr.RequestError as e:
-        print("Could not request results from Google")
-        return 0
-    
-
-
-
 if __name__ == "__main__":
-    
     all_text = {}
     seq = 1
 
-    light_orchestrator = LightOrchestrator()
+    light_orchestrator = LightOrchestrator(
+        ip = '192.168.0.186',
+        lights = [
+            "Desk Lamp 1",
+            "Desk Lightstrip 1",
+            "Desk Lamp 2"
+            ],
+        colors = [
+            [0.3227, 0.3290], # White
+            [0.643, 0.3045]   # Dark Red
+            ]
+        )
     listener = SpeechToText()
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
     
