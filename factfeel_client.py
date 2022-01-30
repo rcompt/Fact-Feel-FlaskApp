@@ -6,6 +6,8 @@ import speech_recognition as sr
 import serial
 import requests
 import json
+from matplotlib import pyplot as plt
+
 
 
 class LightOrchestrator:
@@ -153,7 +155,9 @@ class FactFeelApi:
         # define the fact feel model api url  
         self.fact_feel_url = url
         self.seq = 1
-        self.all_text = {}
+        self.fact_feel_text_data = {}
+        
+        plt.style.use("fivethirtyeight")
         
     def fact_feel_prediction(self, text):
         
@@ -162,7 +166,7 @@ class FactFeelApi:
             'SEQ' : self.seq
            }
         
-        self.all_text[self.seq] = text_elem
+        self.fact_feel_text_data[self.seq] = text_elem
         
         data = {
             'TEXT' : text
@@ -178,9 +182,19 @@ class FactFeelApi:
         
         prediction = response_data["prediction"][0]
         
-        self.all_text[self.seq]["PRED"] = prediction
+        self.fact_feel_text_data[self.seq]["PRED"] = prediction
+        
+        self.plot()
+        
+        self.seq += 1
         
         return prediction
+    
+    def plot(self):
+        y = [self.fact_feel_text_data[seq]["PRED"] for seq in self.fact_feel_text_data]
+        x = [seq for seq in self.fact_feel_text_data]
+        plt.plot(x, y)
+        plt.show()
 
 if __name__ == "__main__":
     all_text = {}
