@@ -6,6 +6,8 @@ import speech_recognition as sr
 import serial
 import requests
 import json
+from matplotlib import pyplot as plt
+
 
 
 class LightOrchestrator:
@@ -149,11 +151,14 @@ class SpeechToText:
     
 class FactFeelApi:
     
-    def __init__(self, url = "https://fact-feel-flaskapp.herokuapp.com/predict"):
+    def __init__(self, url = "https://fact-feel-flaskapp.herokuapp.com/predict", plot_show = True):
         # define the fact feel model api url  
         self.fact_feel_url = url
         self.seq = 1
-        self.all_text = {}
+        self.fact_feel_text_data = {}
+        self.plot_show = plot_show
+        
+        plt.style.use("fivethirtyeight")
         
     def fact_feel_prediction(self, text):
         
@@ -162,7 +167,7 @@ class FactFeelApi:
             'SEQ' : self.seq
            }
         
-        self.all_text[self.seq] = text_elem
+        self.fact_feel_text_data[self.seq] = text_elem
         
         data = {
             'TEXT' : text
@@ -178,9 +183,26 @@ class FactFeelApi:
         
         prediction = response_data["prediction"][0]
         
-        self.all_text[self.seq]["PRED"] = prediction
+        self.fact_feel_text_data[self.seq]["PRED"] = prediction
+        
+        if self.plot_show:
+            self.plot()
+        
+        self.seq += 1
         
         return prediction
+    
+    def plot(self):
+        y = [self.fact_feel_text_data[seq]["PRED"] for seq in self.fact_feel_text_data]
+        x = [seq for seq in self.fact_feel_text_data]
+        fig = plt.plot(x, y)
+        plt.xlabel('Voice/Text Sample', fontsize=18)
+        plt.ylabel('Fact-Feel Prediction', fontsize=18)
+        plt.ylim(-5, 5)
+        if self.plot_show:
+           plt.show()
+        else:
+            return fig
 
 if __name__ == "__main__":
     all_text = {}
