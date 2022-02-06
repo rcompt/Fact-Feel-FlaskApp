@@ -196,7 +196,9 @@ class FactFeelApi:
         y = [self.fact_feel_text_data[seq]["PRED"] for seq in self.fact_feel_text_data]
         x = [seq for seq in self.fact_feel_text_data]
         fig = plt.plot(x, y)
-        
+        plt.xlabel('Voice/Text Sample', fontsize=18)
+        plt.ylabel('Fact-Feel Prediction', fontsize=18)
+        plt.ylim(-5, 5)
         if self.plot_show:
            plt.show()
         else:
