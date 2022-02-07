@@ -1,12 +1,16 @@
 # imports
 from phue import Bridge
+import speech_recognition as sr
+from rgbxy import Converter
+
 from subprocess import call
 import numpy as np
-import speech_recognition as sr
+from matplotlib import pyplot as plt
+
 import serial
 import requests
 import json
-from matplotlib import pyplot as plt
+
 
 
 
@@ -15,6 +19,17 @@ class LightOrchestrator:
     def __init__(self, ip = None, lights = None, colors = None, spectrum_size = 11):
         
         self.spectrum_size = spectrum_size
+        
+        
+        ######
+        #
+        # Converter has some drift if you convert back and forth between the 
+        # xy_to_rgb and rgb_to_xy functions. This may be fixed if we find the
+        # correct Gamut for each light. Or we recommed only a limited number
+        # of calls to this function.
+        #
+        ######
+        self.converter = Converter()
         
         if ip:
             self.set_ip(ip)
@@ -46,6 +61,12 @@ class LightOrchestrator:
             if light not in self.lamp_colors:
                 raise NameError(f'Light named {light} does not exist on the Hue Bridge!')
         
+    def xy_to_rgb(self, colors):
+        return [self.converter.xy_to_rgb(x, y) for x, y in colors]
+    
+    def rgb_to_xy(self, colors):
+        return [self.converter.rgb_to_xy(r, g, b) for r, g, b in colors]    
+    
     def set_base_colors(self, fact_base, feel_base):
         self.fact_base_color = fact_base
         self.feel_base_color = feel_base
