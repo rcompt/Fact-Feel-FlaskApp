@@ -242,7 +242,7 @@ if __name__ == "__main__":
             ]
         )
     listener = SpeechToText()
-    fact_feel = FactFeelApi(url = "http://localhost:5000//predict")
+    fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
     
     while(1):
         
