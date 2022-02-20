@@ -1,3 +1,4 @@
+import queue
 import tkinter as tk
 import factfeel_client as client
 import threading
@@ -5,9 +6,11 @@ from matplotlib.backends.backend_tkagg import ( FigureCanvasTkAgg, NavigationToo
 from matplotlib import pyplot as plt
 
 class FactFeelUI(tk.Frame):
+
     speech_to_text_widget = None
     prediction_tracker_canvas = None
     new_data_queue = []
+    api_thread = None
 
     # Define settings upon initialization. Here you can specify
     def __init__(self, master=None):
@@ -42,22 +45,39 @@ class FactFeelUI(tk.Frame):
         run_client_button.grid(row=1, sticky='ew')
         run_client_button.place()
 
-        # plot area
-        #self.prediction_tracker_canvas = FigureCanvasTkAgg(self)
-        #self.prediction_tracker_canvas.grid(row=2, sticky='ew')
-        #self.prediction_tracker_canvas.place()
+        # queue
+        self.new_data_queue = queue.Queue()
+
+    def update_clock(self):
+        if not self.api_thread.is_alive() and self.new_data_queue.empty():
+            return
+
+        while not self.new_data_queue.empty():
+            new_data = self.new_data_queue.get()
+            fig = self.plot(new_data)
+            self.prediction_tracker_canvas = FigureCanvasTkAgg(fig, self)
+            self.prediction_tracker_canvas.draw()
+            self.prediction_tracker_canvas.get_tk_widget().grid(row=2, sticky='ew')
+
+        self.master.after(10000, self.update_clock)
 
     def update_text(self, text):
         self.speech_to_text_widget.delete(1.0, tk.END)
         self.speech_to_text_widget.insert(tk.END, text)
 
     def run_client_cmd(self):
-        threading.Thread(target=self.run_client).start()
+        # self.data_update_event = threading.Event()
+        self.api_thread = threading.Thread(target=self.run_client)
+
+        # start timer
+        self.master.after(1000, self.update_clock)
+
+        self.api_thread.start()
 
     def plot(self, fact_feel_text_data):
         y = [fact_feel_text_data[seq]["PRED"] for seq in fact_feel_text_data]
         x = [seq for seq in fact_feel_text_data]
-        #fig = plt.plot(x, y)
+        # fig = plt.plot(x, y)
         fig, ax = plt.subplots()
         ax.plot(x, y)
         ax.set_xlabel('Voice/Text Sample', fontsize=18)
@@ -96,15 +116,9 @@ class FactFeelUI(tk.Frame):
                 new_data = server.get_fact_feel_text_data()
 
                 # add to queue in order to pass to main GUI thread
-                #self.new_data_queue.append(new_data)
+                self.new_data_queue.put(new_data)
 
-                fig = self.plot(new_data)
-                self.prediction_tracker_canvas = FigureCanvasTkAgg(fig, master=root)
-                self.prediction_tracker_canvas.draw()
-                self.prediction_tracker_canvas.get_tk_widget().grid(row=2, sticky='ew')
-
-
-                #print(f"Received prediction of {prediction}")
+                # print(f"Received prediction of {prediction}")
 
                 light_orchestrator.fact_feel_modify_lights(prediction)
 
