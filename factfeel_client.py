@@ -242,7 +242,7 @@ if __name__ == "__main__":
             ]
         )
     listener = SpeechToText()
-    fact_feel = FactFeelApi(url = "http://localhost:5000//predict-explain")
+    fact_feel = FactFeelApi(url = "http://localhost:5000//predict")
     
     while(1):
         
