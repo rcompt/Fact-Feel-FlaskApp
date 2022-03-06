@@ -2,11 +2,11 @@ import queue
 import tkinter as tk
 import factfeel_client as client
 import threading
-from matplotlib.backends.backend_tkagg import ( FigureCanvasTkAgg, NavigationToolbar2Tk )
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib import pyplot as plt
 
-class FactFeelUI(tk.Frame):
 
+class FactFeelUI(tk.Frame):
     speech_to_text_widget = None
     prediction_tracker_canvas = None
     new_data_queue = []
@@ -20,7 +20,6 @@ class FactFeelUI(tk.Frame):
 
         # reference to the master widget, which is the tk window
         self.master = master
-        self.master.geometry("800x480")
 
         # with that, we want to then run init_window, which doesn't yet exist
         self.init_window()
@@ -29,20 +28,24 @@ class FactFeelUI(tk.Frame):
     def init_window(self):
         # changing the title of our master widget
         self.master.title("Fact/Feel UI")
+        self.master.geometry("800x480")
+        self.master.resizable(width=False, height=False)
+        self.master.columnconfigure(0, weight=1)
+        self.master.columnconfigure(1, weight=3)
 
         # allowing the widget to take the full space of the root window
         self.pack(fill=tk.BOTH, expand=1)
 
         # create speech to text field
         self.speech_to_text_widget = tk.Text(self)
-        self.speech_to_text_widget.grid(row=0, sticky='ew')
+        self.speech_to_text_widget.grid(row=0, column=0, sticky='ew')
         self.speech_to_text_widget.config(state=tk.NORMAL)
         self.speech_to_text_widget.insert(tk.END, "Speech-to-text goes here")
         self.speech_to_text_widget.place()
 
         # create run button
         run_client_button = tk.Button(self, text="Run", command=self.run_client_cmd)
-        run_client_button.grid(row=1, sticky='ew')
+        run_client_button.grid(row=1, column=0, sticky='ew')
         run_client_button.place()
 
         # queue
@@ -57,7 +60,7 @@ class FactFeelUI(tk.Frame):
             fig = self.plot(new_data)
             self.prediction_tracker_canvas = FigureCanvasTkAgg(fig, self)
             self.prediction_tracker_canvas.draw()
-            self.prediction_tracker_canvas.get_tk_widget().grid(row=2, sticky='ew')
+            self.prediction_tracker_canvas.get_tk_widget().grid(row=0, column=1, sticky='ew')
 
         self.master.after(10000, self.update_clock)
 
@@ -97,7 +100,7 @@ class FactFeelUI(tk.Frame):
             ]
         )
         speech_to_text = client.SpeechToText()
-        server = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
+        api = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
 
         seq_num = 1
 
@@ -110,10 +113,14 @@ class FactFeelUI(tk.Frame):
             # data to be sent to api
             if text != 0:
 
-                prediction = server.fact_feel_prediction(text)
+                prediction, weight_map = api.fact_feel_explain(text)
+
+                print("Weight Map\n")
+                for key_ in weight_map:
+                    print(f"Key: {key_}, Value: {weight_map[key_]}\n")
 
                 # grab new data from monitor thread
-                new_data = server.get_fact_feel_text_data()
+                new_data = api.get_fact_feel_text_data()
 
                 # add to queue in order to pass to main GUI thread
                 self.new_data_queue.put(new_data)
