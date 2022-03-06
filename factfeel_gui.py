@@ -87,7 +87,7 @@ class FactFeelUI(tk.Frame):
 
     def run_client(self):
         light_orchestrator = client.LightOrchestrator(
-            ip='192.168.1.9',
+            ip='192.168.1.5',
             lights=[
                 "Hue lightstrip 1",
             ],
@@ -97,7 +97,7 @@ class FactFeelUI(tk.Frame):
             ]
         )
         speech_to_text = client.SpeechToText()
-        server = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/predict", plot_show=False)
+        server = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
 
         seq_num = 1
 
