@@ -1,16 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <style>
+		.col {
+		  font-size: 100%;
+		}
+		.row{
+			padding-top: .5%;
+			padding-bottom: .5%;
+		}
+		body {
+			padding-bottom: 1%;
+		}
+		h2{
+			padding-top: 1%;
+			padding-bottom: 1%;
+		}
+		h6 {
+			padding-top: .5%;
+		}
+
+        .container {
+            display: flex;
+             flex-wrap: wrap;
+            grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+            grid-gap: 1rem;
+        }
+
+        .item {
+            margin: 0.5rem;
+            background: #f3edd6;
+            border: 3px solid #b49c44;
+            color: #000000;
+            padding: 3rem;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .form {
+            padding: 0%;
+        }
+
+		</style>
+
 	<meta charset="utf-8">
-	<title>Factual Feeling Measurement</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    
+	<title>Factual Feeling Measurement Application</title>
 </head>
 <body>
-    Hello World
-    {{prediction}}
-    <form action="/predict" method="post">
-        Text Input: <input type="text" name="TEXT" value="Hello there! Input text here."><br>
-    <input type="submit" value="prediction">
-    </form>
+    <div class="container">
+        <div class="item">
+            Welcome to the Fact-Feel Predictor
+        </div>
+        <div class="item">
+            Text Input:
+            <form>
+                <input type="text" id="TEXT" value="Hello there! Input text here."><br><br>
+                <button onclick="myFunction()">Prediction</button>
+                <button onclick="myFunction()">Explain</button>
+            </form>
+
+        </div>
+
+        <div>
+            <p id="prediction_output"></p>
+        </div>
+
+    </div>
+
+    <script>
+        function myFunction() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://fact-feel-flaskapp.herokuapp.com/predict");
+
+            var text;
+
+            text = document.getElementById('textbox_id').value
+
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                console.log(xhr.status);
+                console.log(xhr.responseText);
+            }};
+
+            let data = `{
+            "TEXT": ${text}
+            }`;
+
+            xhr.send(data);
+
+            document.getElementById("prediction_output").innerHTML = "Hello World";
+        }
+    </script>
 </body>
 </html>
 
