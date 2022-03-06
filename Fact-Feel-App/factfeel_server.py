@@ -44,7 +44,29 @@ def predict():
         #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
     #    return render_template("home.html",prediction=prediction)
         return jsonify(predictionData)
-    
+   
+@app.route("/explain",methods=["POST"])
+def explain():
+    if request.data:
+        #req_data = request.get_json()
+        text = request.json.get('TEXT')
+        feats, feat_categories = feat_extractor.run_explain(text)
+        
+        feat_coef = dict(zip(feat_extractor.feat_order, ff_model.model.coef_))
+        word_weights = {}
+        
+        for word in feat_categories:
+            word_weights[word] = sum([feat_coef[feat] for feat in feat_categories[word] if feat in feat_coef])
+        
+        prediction = ff_model.predict([feats])
+
+        predictionData = {
+            'prediction': list(prediction),
+            'weights': word_weights
+        }
+        #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
+    #    return render_template("home.html",prediction=prediction)
+        return jsonify(predictionData)
 
 if __name__ == "__main__":
     app.run(debug=True)

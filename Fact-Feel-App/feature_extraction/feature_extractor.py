@@ -761,6 +761,72 @@ class FeatureExtractor():
                 temp_counts[smile] = counts[smile]
         return sum([temp_counts[item] for item in temp_counts])
         
+    
+    def liwc_score_text(self, text, raw_counts=False, scores=None, unique_words=None):
+        """Returns a sparse counter object of word frequencies or counts if raw_counts is specified
+            @param scores: If you want to keep a running total, Scores should be
+                a Counter of previous counts and raw_counts should be set to True!
+            @param unique_words: Again, will be created if None. Should be a set().
+                If used, you'll probably want to override the scores['Unique Words'] category.
+        """
+        assert self._dictionary is not None, 'Dictionary not loaded, you need to load a .dic file, perhaps from LIWC...'
+        if scores is None: scores = Counter()
+        
+        word_scores = {}
+        
+        if unique_words is None: unique_words = set()
+        _liwc_tokenizer = re.compile(r'(\d[^a-z\(\)]*|[a-z](?:[\'\.]?[a-z])*|(?<=[a-z])[^a-z0-9\s\(\)]+|[\(\)][^a-z]*)',re.UNICODE|re.IGNORECASE)
+        
+        sentence_terminated = True
+        for line in text.strip().split('\n'):
+            all_tokens = _liwc_tokenizer.findall(line.strip().lower())
+            if not all_tokens:
+                continue
+            for i in range(len(all_tokens)):
+                token = all_tokens[i]
+                if len(token)==0: continue
+
+                if token[0].isdigit(): #Numbers
+                
+                    liwc_word_scores = self._dictionary.score_word(token)
+                    
+                    word_scores[token] = set([cat for cat in liwc_word_scores.keys() if liwc_word_scores[cat] > 0])
+                    
+                    scores.update(liwc_word_scores)
+                    sentence_terminated=False
+                elif token[0].isalpha(): #Words
+                    unique_words.add(token)
+                    previous_token = all_tokens[i-1] if i>0 else ''
+                    next_token = all_tokens[i+1] if i<len(all_tokens)-1 else ''
+                    
+                    liwc_word_scores = self._dictionary.score_word(token, previous_token, next_token)
+                    
+                    word_scores[token] = set([cat for cat in liwc_word_scores.keys() if liwc_word_scores[cat] > 0])
+                    
+                    scores.update(liwc_word_scores)
+                    sentence_terminated=False
+                else: #Punctuation and stuff
+                
+                    liwc_word_scores = self._dictionary.score_word(token, previous_token, next_token)
+                    
+                    word_scores[token] = set([cat for cat in liwc_word_scores.keys() if liwc_word_scores[cat] > 0])
+                    
+                    scores.update(liwc_word_scores)
+
+                if token in Dictionary.sentence_punctuation and not sentence_terminated:
+                    scores['Sentences']+=1
+                    sentence_terminated = True
+
+        if not sentence_terminated:
+            scores['Sentences'] += 1
+
+        scores['Unique Words'] = len(unique_words)
+        scores['Words Per Sentence'] = scores['Word Count']/scores['Sentences'] if scores['Sentences'] > 0 else 0
+
+        if not raw_counts:
+            scores = normalize_scores(scores)
+
+        return scores, word_scores
         
     def get_feats(self,text):
         
@@ -947,11 +1013,224 @@ class FeatureExtractor():
 
     def run(self,text):
         return self.order_feats(self.get_feats(text))
+    
+    
+    def get_feats_explain(self,text):
+        
+        feats = {}
+        
+        feats_explain_dict = {}
+        
+        for elem in subj_cats:
+            feats[elem] = 0.0   
+        feats["strong_pos_adj"] = 0.0
+        feats["acknowledge"] = 0.0    
+        feats["cause_verbs"] = 0.0
+        feats["you_mod"] = 0.0
+        feats["please_verb"] = 0.0
+        feats["if-you"] = 0.0
+        feats["negative_jargon"] = 0.0
+        feats["smiley"] = 0.0
+        feats["greetings"] = 0.0
+        feats["congrats"] = 0.0
+        feats["welcome"] = 0.0    
+        for feat in _liwc_categories:
+            feats[feat] = 0.0
+        for feat in pos_tags:
+            feats[feat] = 0.0
+        for feat in emo_cats:
+            feats[feat] = 0.0
+        
+    		#Use pattern.tag to get POS tags
+        tags = nltk.pos_tag(nltk.word_tokenize(text))
+    		#Gather only the tags from the output of pattern.tag
+        ptags = [t for w,t in tags]
+    		#Dictionary used for hold the counts for each POS tag
+        tag_dic = {}
+    		#Create Dictionary element for each possible tag
+        for t in pos_tags:
+            tag_dic[t] = 0.0
+    		#Count number of tags found within the text sample
+        for t in ptags:
+            if t in tag_dic:
+                tag_dic[t] += 1
+    		#Append each tag frequency to the row
+    		#If tag was not present append 0
+            
+        # Add feature labels to the explain dict
+        # Adds what features this word is triggering for the model
+        for w, t in tags:
+            w = w.lower()
+            if w not in feats_explain_dict:
+                feats_explain_dict[w] = set()
+            feats_explain_dict[w].add(t)
+            
+        for t in pos_tags:
+            if len(ptags) == 0:
+                feats[t] = 0.0
+            else:
+                feats[t] = (tag_dic[t] / float(len(ptags)))
+        wnl = WordNetLemmatizer()
+        subj_parsed = [wnl.lemmatize(i) for i in nltk.word_tokenize(text)]
+    #    subj_parsed = parse(text,chunks=False,lemmata=True).split(' ') 
+        	#EMOTION LEXICON FEATURE EXTRACTION
+    		#Use pattern.parse to get the parsed text
+        words = subj_parsed[:]
+        results = {}
+    		#Dictionary used for hold the counts for each emotional category
+        text_cats = {}
+    		#Initialize all categories to 0 count
+        for cat in emo_cats:
+            text_cats[cat] = 0.0
+        
+        for key in self.emo_dic[list(self.emo_dic.keys())[0]]:
+            results[key] = 0.0
+    		#Separate the words given from pattern.parse into a list
+    #    for word_emo in subj_parsed:
+    #        words.append(word_emo.split('/')[0])
+    		
+        for word in words:
+    			#To ensure the word is in the lexicon match the case by making all text lower case
+            word = word.lower()
+            self.glob_word = word
+    			#Count the number of times a category is found
+            if word in self.emo_dic:
+                
+                # Check if word is in explain_dict
+                # If not then add
+                if word not in feats_explain_dict:
+                    feats_explain_dict[word] = set()
+            
+                for cat in self.emo_dic[word]:
+                    text_cats[cat+"_emo"] += float(self.emo_dic[word][cat])
+                    # Add feature to explain_dict
+                    feats_explain_dict[word].add(cat+"_emo")
+                    
+    		#Append the emotion category frequency to the row
+        for cat in text_cats:
+            text_cats[cat] = text_cats[cat]/len(words)
+            feats[cat] = text_cats[cat] 
+        #Get Strong positive adjectives feature
+        for word_strong in strong_pos_adjectives:
+            feats["strong_pos_adj"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_strong), text.lower()))
+        #Get Causative/subjunctive verbs
+        for word_cause in cause_verbs:
+            feats["cause_verbs"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_cause), text.lower()))
+        #Get YouMod features
+        for word_you in you_mod:
+            feats["you_mod"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_you), text.lower()))
+        #Get Negative Jargon features
+        for word_neg in negative_jargon:
+            feats["negative_jargon"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_neg), text.lower()))
+        #Get Smiley features
+        for word_smile in smile:
+            feats["smiley"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_smile), text.lower()))
+        feats["smiley"] += self.find_smilies(text)
+        #Get Greetings features
+        for word_greet in greetings:
+            feats["greetings"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_greet), text.lower()))
+        #Get congrats features
+        for word_congrats in congrats:
+            feats["congrats"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_congrats), text.lower()))
+        #Get welcome features
+        feats["welcome"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("welcome"), text.lower()))
+        #Get Acknowledge features
+        for word_ack in acknowledge:
+            feats["acknowledge"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_ack), text.lower()))
+        #Get if-you features
+        feats["if-you"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("if you"), text.lower()))
+        
+        for index in range(len(subj_parsed)):
+            word = subj_parsed[index]
+            if word != '':
+                
+    #            parts = ptags[index]
+                w = word
+                pos = ptags[index]
+    #            lem = parts[2]
+                #Get Subjectivity Features 
+                if w.lower() in self.subj_dic:
+                    w =  w.lower()
+                    pos_temp = POS.get(pos,"anypos")
+                    if pos_temp in self.subj_dic[w]:
+                        subj = self.subj_dic[w][pos_temp]["type"].replace("subj","")
+                        polarity = subj + "-" + self.subj_dic[w][pos_temp]['priorpolarity']
+                        if polarity in subj_cats:
+                            feats[polarity] += 1
+                            
+                            # Check if word is in explain_dict
+                            # If not then add
+                            if w not in feats_explain_dict:
+                                feats_explain_dict[w] = set()
+                                
+                            # Add feature to explain_dict
+                            feats_explain_dict[w].add(cat+"_emo")
+                            
+    #            elif lem in subj_dic:
+    #                pos_temp = POS.get(pos,"anypos")
+    #                if pos_temp in subj_dic[lem]:
+    #                    subj = subj_dic[lem][pos_temp]["type"].replace("subj","")
+    #                    polarity = subj + "-" + subj_dic[lem][pos_temp]['priorpolarity']
+    #                    if polarity in subj_cats:
+    #                        feats[polarity] += 1
+                #Get Please features
+                if w.lower() == "please":
+                    if index != len(subj_parsed)-1:
+                        next_word = subj_parsed[index+1]
+                        i = 2
+                        flag = True
+                        while(next_word == '' and flag):
+                            if index+i >= len(subj_parsed):
+                                flag = False
+                                break
+                            next_word = subj_parsed[index+i]
+                            i += 1
+                        if flag:
+                            next_parts = ptags[index+1]
+                            next_pos = pos_temp = POS.get(next_parts,"anypos")
+                            if next_pos == "verb":
+                                feats["please_verb"] += 1
+        
+        liwc_feats, liwc_explanations = self.liwc_score_text(text)
+        
+        for word in liwc_explanations:
+            if word not in feats_explain_dict:
+                feats_explain_dict[word] = set()
+            feats_explain_dict[word] = feats_explain_dict[word] | set(liwc_explanations[word])
+        
+        for feat in liwc_feats:
+            if feat in feats:
+                feats[feat] = liwc_feats[feat]
+        for feat in feats:
+            if feat not in liwc_feats:
+    #            print(feat)
+    #            print(type(feats[feat]))
+    #            print(liwc_feats['Word Count'])
+    ##            print(type(liwc_feats['Word Count']))
+    #            if feat == "subj":
+    #                for elem in subj_cats:
+    #                    feats[feat][elem] = (feats[feat][elem] / liwc_feats['Word Count'])*100.0
+    #            else:
+                if liwc_feats['Word Count'] == 0:
+                    feats[feat] = 0.0
+                else:
+                    feats[feat] = (feats[feat] / liwc_feats['Word Count'])*100.0
+        for feat in punct_feats:
+            count = 0
+            for char in punct_feats[feat]:
+                count += text.count(char)
+            feats[feat] = count
+        return feats, feats_explain_dict
+    
+    
+    def run_explain(self, text):
+        feats, feats_exaplantion = self.get_feats_explain(text)
+        return self.order_feats(feats), feats_exaplantion
 
 if __name__ == "__main__":
     FE_ = FeatureExtractor()
     print("TESTING FEATURE EXTRACTOR")
-    print(FE_.run("Hello there! How is your day going? I hope you are having an amazing happy time!"))    
+    print(FE_.run_explain("Hello there! How is your day going? I hope you are having an amazing happy time!"))    
     print("SUCCESS!")
     
     
