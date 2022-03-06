@@ -213,6 +213,40 @@ class FactFeelApi:
         
         return prediction
     
+    def fact_feel_explain(self, text):
+        
+        text_elem = {
+            'TEXT': text,
+            'SEQ' : self.seq
+           }
+        
+        self.fact_feel_text_data[self.seq] = text_elem
+        
+        data = {
+            'TEXT' : text
+        }
+        
+        print("Sending: %s"%data['TEXT'])
+        
+        # sending post request and saving response as response object 
+        response = requests.post(url = self.fact_feel_url, json = data) 
+          
+        # extracting response text
+        response_data = json.loads(response.text)
+        
+        prediction = response_data["prediction"][0]
+        weights = response_data["weights"]
+        
+        self.fact_feel_text_data[self.seq]["PRED"] = prediction
+        self.fact_feel_text_data[self.seq]["WEIGHTS"] = weights
+        
+        if self.plot_show:
+            self.plot()
+        
+        self.seq += 1
+        
+        return prediction, weights
+    
     def plot(self):
         y = [self.fact_feel_text_data[seq]["PRED"] for seq in self.fact_feel_text_data]
         x = [seq for seq in self.fact_feel_text_data]
