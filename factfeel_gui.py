@@ -1,58 +1,52 @@
-import queue
 import tkinter as tk
 import factfeel_client as client
 import threading
+import queue
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib import pyplot as plt
 
 
-class FactFeelUI(tk.Frame):
+class FactFeelUI(tk.Tk):
+    # Globals
     speech_to_text_widget = None
     prediction_tracker_canvas = None
     new_data_queue = []
     api_thread = None
 
-    # Define settings upon initialization. Here you can specify
-    def __init__(self, master=None):
-
-        # parameters that you want to send through the Frame class.
-        tk.Frame.__init__(self, master)
-
-        # reference to the master widget, which is the tk window
-        self.master = master
-
-        # with that, we want to then run init_window, which doesn't yet exist
+    def __init__(self):
+        super().__init__()
         self.init_window()
+        self.new_data_queue = queue.Queue()
 
     # Creation of init_window
     def init_window(self):
-        # changing the title of our master widget
-        self.master.title("Fact/Feel UI")
-        self.master.geometry("800x480")
-        self.master.resizable(width=False, height=False)
-        self.master.columnconfigure(0, weight=1)
-        self.master.columnconfigure(1, weight=3)
+        self.title('Fact/Feel Engineering Tool')
+        self.geometry('800x480')
+        self.resizable(width=False, height=False)
 
-        # allowing the widget to take the full space of the root window
-        self.pack(fill=tk.BOTH, expand=1)
+        # Set up grid
+        self.columnconfigure(0, weight=15)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
 
-        # create speech to text field
-        self.speech_to_text_widget = tk.Text(self)
-        self.speech_to_text_widget.grid(row=0, column=0, sticky='ew')
-        self.speech_to_text_widget.config(state=tk.NORMAL)
-        self.speech_to_text_widget.insert(tk.END, "Speech-to-text goes here")
-        self.speech_to_text_widget.place()
+        # Set up main speech-to-text textbox. This displays what the speech recognition converts to text
+        self.speech_to_text_widget = tk.Text(self, wrap="word", borderwidth=3)
+        self.speech_to_text_widget.grid(row=0, column=0, sticky='nsew')
 
-        # create run button
-        run_client_button = tk.Button(self, text="Run", command=self.run_client_cmd)
-        run_client_button.grid(row=1, column=0, sticky='ew')
-        run_client_button.place()
+        self.run_client_cmd()
 
-        # queue
-        self.new_data_queue = queue.Queue()
+        clear_text_button = tk.Button(self, text="Clear Text", command=self.clear_text_cmd)
+        clear_text_button.grid(row=1, column=0, sticky='nsew')
+
+        # Set up initial blank graph
+        fig = self.plot(None)
+        self.prediction_tracker_canvas = FigureCanvasTkAgg(fig, self)
+        self.prediction_tracker_canvas.draw()
+        self.prediction_tracker_canvas.get_tk_widget().grid(row=0, rowspan=2, column=1, sticky='ew')
 
     def update_clock(self):
-        if not self.api_thread.is_alive() and self.new_data_queue.empty():
+        if not self.api_thread.is_alive() and not self.new_data_queue.empty():
             return
 
         while not self.new_data_queue.empty():
@@ -60,37 +54,45 @@ class FactFeelUI(tk.Frame):
             fig = self.plot(new_data)
             self.prediction_tracker_canvas = FigureCanvasTkAgg(fig, self)
             self.prediction_tracker_canvas.draw()
-            self.prediction_tracker_canvas.get_tk_widget().grid(row=0, column=1, sticky='ew')
+            self.prediction_tracker_canvas.get_tk_widget().grid(row=0, rowspan=2, column=1, sticky='ew')
 
-        self.master.after(10000, self.update_clock)
+        self.after(10000, self.update_clock)
 
     def update_text(self, text):
-        self.speech_to_text_widget.delete(1.0, tk.END)
-        self.speech_to_text_widget.insert(tk.END, text)
+        if isinstance(text, str):
+            self.speech_to_text_widget.insert(tk.END, text + '\n')
+
+    def clear_text_cmd(self):
+        self.speech_to_text_widget.delete("1.0", tk.END)
 
     def run_client_cmd(self):
-        # self.data_update_event = threading.Event()
         self.api_thread = threading.Thread(target=self.run_client)
+        self.api_thread.daemon = True
 
         # start timer
-        self.master.after(1000, self.update_clock)
-
+        self.after(1000, self.update_clock)
         self.api_thread.start()
 
-    def plot(self, fact_feel_text_data):
-        y = [fact_feel_text_data[seq]["PRED"] for seq in fact_feel_text_data]
-        x = [seq for seq in fact_feel_text_data]
-        # fig = plt.plot(x, y)
+    @staticmethod
+    def plot(fact_feel_text_data):
         fig, ax = plt.subplots()
-        ax.plot(x, y)
-        ax.set_xlabel('Voice/Text Sample', fontsize=18)
-        ax.set_ylabel('Fact-Feel Prediction', fontsize=18)
+
+        if fact_feel_text_data is not None:
+            y = [fact_feel_text_data[seq]["PRED"] for seq in fact_feel_text_data]
+            x = [seq for seq in fact_feel_text_data]
+            ax.plot(x, y)
+
+        ax.set_xlabel('Voice/Text Sample', fontsize=10)
+        ax.set_ylabel('Fact-Feel Prediction', fontsize=10)
         ax.set_ylim(-5, 5)
+
+        fig.tight_layout()
+
         return fig
 
     def run_client(self):
         light_orchestrator = client.LightOrchestrator(
-            ip='192.168.1.5',
+            ip='192.168.1.3',
             lights=[
                 "Hue lightstrip 1",
             ],
@@ -104,15 +106,13 @@ class FactFeelUI(tk.Frame):
 
         seq_num = 1
 
-        while 1:
-
+        while self.api_thread.is_alive():
             text = speech_to_text.listen_transcribe()
 
             self.update_text(text)
 
             # data to be sent to api
             if text != 0:
-
                 prediction, weight_map = api.fact_feel_explain(text)
 
                 print("Weight Map\n")
@@ -130,7 +130,6 @@ class FactFeelUI(tk.Frame):
                 light_orchestrator.fact_feel_modify_lights(prediction)
 
             else:
-
                 print("Skipping due to issues with response from Google")
 
             seq_num += 1
@@ -138,7 +137,7 @@ class FactFeelUI(tk.Frame):
 
 ########################################################################################################################
 
+
 if __name__ == "__main__":
-    root = tk.Tk()
-    FactFeelUI(root)
-    root.mainloop()
+    app = FactFeelUI()
+    app.mainloop()
