@@ -60,44 +60,83 @@
         <div class="item">
             Text Input:
             <form>
-                <input type="text" id="TEXT" value="Hello there! Input text here."><br><br>
-                <button onclick="myFunction()">Prediction</button>
-                <button onclick="myFunction()">Explain</button>
+                <input type="text" id="textbox_id" value="Hello there! Input text here."><br><br>
+                <button onclick="predict(); return false;">Prediction</button>
+                <button onclick="explain(); return false;">Explain</button>
             </form>
 
         </div>
 
-        <div>
+        <div class="item">
+            Prediction
             <p id="prediction_output"></p>
         </div>
 
     </div>
 
     <script>
-        function myFunction() {
+        function predict() {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "https://fact-feel-flaskapp.herokuapp.com/predict");
+            xhr.open("POST", "http://localhost:5000/predict");
 
             var text;
 
             text = document.getElementById('textbox_id').value
+            console.log(text);
 
             xhr.setRequestHeader("Accept", "application/json");
             xhr.setRequestHeader("Content-Type", "application/json");
 
-            xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                console.log(xhr.status);
-                console.log(xhr.responseText);
-            }};
-
-            let data = `{
-            "TEXT": ${text}
-            }`;
-
+            let data = JSON.stringify({ "TEXT": text } );
+            console.log(data);
             xhr.send(data);
 
-            document.getElementById("prediction_output").innerHTML = "Hello World";
+            xhr.onreadystatechange = function () {
+            if (this.status  === 200) {
+                console.log(xhr.status);
+                console.log(xhr.responseText);
+
+                prediction = JSON.parse(this.responseText);
+
+                document.getElementById("prediction_output").innerHTML = prediction["prediction"][0].toFixed(2);
+            }};
+
+        }
+
+        function explain() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:5000/explain");
+
+            var text;
+
+            text = document.getElementById('textbox_id').value
+            console.log(text);
+
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            let data = JSON.stringify({ "TEXT": text } );
+            console.log(data);
+            xhr.send(data);
+
+            xhr.onreadystatechange = function () {
+            if (this.status  === 200) {
+                console.log(xhr.status);
+                console.log(xhr.responseText);
+
+                prediction = JSON.parse(this.responseText);
+
+                document.getElementById("prediction_output").innerHTML = prediction["prediction"][0].toFixed(2);
+
+                for (const [key, value] of Object.entries(prediction["weights"])) {
+                    console.log(`${key}: ${value}`);
+                    document.getElementById("prediction_output").innerHTML += key +": " + value.toFixed(2) + "\n";
+                };
+                
+
+
+            }};
+
         }
     </script>
 </body>
