@@ -42,9 +42,6 @@ def predict():
         predictionData = {'prediction': list(prediction)}
         
         response = jsonify(predictionData)
-        #response.headers.add('Access-Control-Allow-Origin', '*')
-        #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
-    #    return render_template("home.html",prediction=prediction)
         return response
    
 @app.route("/explain",methods=["POST"])
@@ -67,9 +64,9 @@ def explain():
             'prediction': list(prediction),
             'weights': word_weights
         }
-        #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
-    #    return render_template("home.html",prediction=prediction)
-        return jsonify(predictionData)
+
+        response = jsonify(predictionData)
+        return response
 
 if __name__ == "__main__":
     app.run(debug=True)
