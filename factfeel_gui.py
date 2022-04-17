@@ -4,14 +4,20 @@ import threading
 import queue
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib import pyplot as plt
+import sys
 
 
 class FactFeelUI(tk.Tk):
+    # Constants
+    window_size = '800x480'
+
     # Globals
     speech_to_text_widget = None
     prediction_tracker_canvas = None
     new_data_queue = []
     api_thread = None
+    light_ipaddress = None
+    gettrace = None
 
     def __init__(self):
         super().__init__()
@@ -21,14 +27,31 @@ class FactFeelUI(tk.Tk):
     # Creation of init_window
     def init_window(self):
         self.title('Fact/Feel Engineering Tool')
-        self.geometry('800x480')
-        self.resizable(width=False, height=False)
+        self.geometry(self.window_size)
+
+        self.gettrace = getattr(sys, 'gettrace', None)
+
+        if self.gettrace is None:
+            self.attributes("-fullscreen", True)
+            self.resizable(width=True, height=True)
+        elif self.gettrace():
+            self.attributes("-fullscreen", False)
+            self.resizable(width=False, height=False)
+
+        # Menu bar
+        menu_bar = tk.Menu(self)
+        config_menu = tk.Menu(menu_bar, tearoff=0)
+        config_menu.add_command(label="Config", command=self.config_app_cmd)
+        menu_bar.add_cascade(label="Config", menu=config_menu)
+        self.config(menu=menu_bar)
 
         # Set up grid
         self.columnconfigure(0, weight=15)
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
 
         # Set up main speech-to-text textbox. This displays what the speech recognition converts to text
         self.speech_to_text_widget = tk.Text(self, wrap="word", borderwidth=3)
@@ -61,6 +84,16 @@ class FactFeelUI(tk.Tk):
     def update_text(self, text):
         if isinstance(text, str):
             self.speech_to_text_widget.insert(tk.END, text + '\n')
+
+    def config_app_cmd(self):
+        config_popup = tk.Toplevel(self)
+        config_popup.geometry(self.window_size)
+        config_popup.title("Configure Fact/Feel")
+        ipaddress_textbox = tk.Text(self)
+        tk.Button(config_popup, text="Update IP Address", command=self.update_ipaddress_cmd)
+
+    def update_ipaddress_cmd(self, new_ipaddress):
+        self.light_ipaddress = new_ipaddress
 
     def clear_text_cmd(self):
         self.speech_to_text_widget.delete("1.0", tk.END)
