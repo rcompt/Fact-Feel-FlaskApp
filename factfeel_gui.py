@@ -29,8 +29,8 @@ class FactFeelUI(tk.Tk):
         self.title('Fact/Feel Engineering Tool')
         self.geometry(self.window_size)
 
+        # Don't fullscreen app if running in debug
         self.gettrace = getattr(sys, 'gettrace', None)
-
         if self.gettrace is None:
             self.attributes("-fullscreen", True)
             self.resizable(width=True, height=True)
@@ -89,8 +89,37 @@ class FactFeelUI(tk.Tk):
         config_popup = tk.Toplevel(self)
         config_popup.geometry(self.window_size)
         config_popup.title("Configure Fact/Feel")
-        ipaddress_textbox = tk.Text(self)
-        tk.Button(config_popup, text="Update IP Address", command=self.update_ipaddress_cmd)
+
+        # Don't fullscreen popup if running in debug
+        if self.gettrace is None:
+            config_popup.attributes("-fullscreen", True)
+            config_popup.resizable(width=True, height=True)
+        elif self.gettrace():
+            config_popup.attributes("-fullscreen", False)
+            config_popup.resizable(width=False, height=False)
+
+        config_popup.resizable(width=False, height=False)
+        config_popup.columnconfigure(0, weight=1)
+        config_popup.columnconfigure(1, weight=10)
+        config_popup.columnconfigure(2, weight=1)
+        config_popup.columnconfigure(3, weight=10)
+        config_popup.columnconfigure(4, weight=1)
+        config_popup.columnconfigure(5, weight=10)
+        config_popup.columnconfigure(6, weight=1)
+        config_popup.columnconfigure(7, weight=1)
+        config_popup.rowconfigure(0, weight=1, rowheight=100)
+        config_popup.rowconfigure(1, weight=100)
+
+        first_octet_text = tk.Text(config_popup).grid(row=0, column=0, sticky='news')
+        tk.Label(config_popup, text=".").grid(row=0, column=1, sticky='news')
+        second_octet_text = tk.Text(config_popup).grid(row=0, column=2, sticky='news')
+        tk.Label(config_popup, text=".").grid(row=0, column=3, sticky='news')
+        third_octet_text = tk.Text(config_popup).grid(row=0, column=4, sticky='news')
+        tk.Label(config_popup, text=".").grid(row=0, column=5, sticky='news')
+        fourth_octet_text = tk.Text(config_popup).grid(row=0, column=6, sticky='news')
+
+        update_ip_button = tk.Button(config_popup, text="Update IP Address", command=self.update_ipaddress_cmd)
+        update_ip_button.grid(row=0, column=7, sticky='news')
 
     def update_ipaddress_cmd(self, new_ipaddress):
         self.light_ipaddress = new_ipaddress
@@ -125,7 +154,7 @@ class FactFeelUI(tk.Tk):
 
     def run_client(self):
         light_orchestrator = client.LightOrchestrator(
-            ip='192.168.1.3',
+            ip='192.168.1.6',
             lights=[
                 "Hue lightstrip 1",
             ],
