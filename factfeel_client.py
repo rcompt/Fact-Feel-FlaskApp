@@ -125,14 +125,19 @@ class LightOrchestrator:
 
 class SpeechToText:
     
-    def __init__(self, device = 2, debug = False):
+    def __init__(self, device = 2, init = False, debug = False):
+        
+        self._debug = debug
         
         if debug:
-            self._device_listings(debug)
+            self._device_listings()
         self._device = device
-        self.r = sr.Recognizer()
-        with sr.Microphone(device_index = self._device) as source:
-            self.r.adjust_for_ambient_noise(source,duration=10)
+        
+        if init:
+            self.initialize()
+        else:
+            self.initialized = False
+
     
     @property
     def device(self):
@@ -142,27 +147,37 @@ class SpeechToText:
     def device(self, device):
         self._device = device
     
-    def _device_listings(self, debug = False):
+    def _device_listings(self):
         import pyaudio
         audio = pyaudio.PyAudio()
         
         num_devices = audio.get_host_api_info_by_index(0).get("deviceCount",0)
         device_count = 0
-        devices = []
+        self.devices = {}
         for i in range(0, num_devices):
             if (audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
-                if debug:
+                if self._debug:
                     print("Input Device id ", i, " - ", audio.get_device_info_by_host_api_device_index(0, i).get('name'))
                     
-                devices.append(audio.get_device_info_by_host_api_device_index(0, i).get('name'))
+                self.devices[i] = audio.get_device_info_by_host_api_device_index(0, i).get('name')
                 device_count += 1
-        if debug:
+        if self._debug:
             print(f"{device_count} devices found through PyAudio.")
             
-        return devices
+        return self.devices
         
     def _set_device(self, device_index):
         self.device
+    
+    def initialize(self):
+        
+        if self._debug:
+            print(f"Using device index {self._device} : {self.devices[self._device]}")
+        
+        self.r = sr.Recognizer()
+        with sr.Microphone(device_index = self._device) as source:
+            self.r.adjust_for_ambient_noise(source,duration=10)  
+        self.initialized = True
     
     def _listen(self, duration):
         '''
@@ -172,12 +187,18 @@ class SpeechToText:
         return
             audio: <Unknown!!!>
         '''
-        with sr.Microphone(device_index = self._device) as source:
-            #r.adjust_for_ambient_noise(source)
-            print("Say Something")
-            audio = self.r.record(source, duration = duration)
-            print("got it")
-        return audio
+        
+        if self.initialized:
+        
+            with sr.Microphone(device_index = self._device) as source:
+                #r.adjust_for_ambient_noise(source)
+                print("Say Something")
+                audio = self.r.record(source, duration = duration)
+                print("got it")
+            return audio
+        
+        else:
+            raise RuntimeError("listen was called before calling initialize!")
     
     def _voice(self, audio):
         '''
@@ -308,7 +329,7 @@ if __name__ == "__main__":
             [0.643, 0.3045]   # Dark Red
             ]
         )
-    listener = SpeechToText(debug = True)
+    listener = SpeechToText(init = True, debug = True)
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
     
     while(1):
