@@ -125,11 +125,44 @@ class LightOrchestrator:
 
 class SpeechToText:
     
-    def __init__(self):
+    def __init__(self, device = 2, debug = False):
         
+        if debug:
+            self._device_listings(debug)
+        self._device = device
         self.r = sr.Recognizer()
-        with sr.Microphone(device_index = 2) as source:
+        with sr.Microphone(device_index = self._device) as source:
             self.r.adjust_for_ambient_noise(source,duration=10)
+    
+    @property
+    def device(self):
+        return self._device
+    
+    @device.setter
+    def device(self, device):
+        self._device = device
+    
+    def _device_listings(self, debug = False):
+        import pyaudio
+        audio = pyaudio.PyAudio()
+        
+        num_devices = audio.get_host_api_info_by_index(0).get("deviceCount",0)
+        device_count = 0
+        devices = []
+        for i in range(0, num_devices):
+            if (audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+                if debug:
+                    print("Input Device id ", i, " - ", audio.get_device_info_by_host_api_device_index(0, i).get('name'))
+                    
+                devices.append(audio.get_device_info_by_host_api_device_index(0, i).get('name'))
+                device_count += 1
+        if debug:
+            print(f"{device_count} devices found through PyAudio.")
+            
+        return devices
+        
+    def _set_device(self, device_index):
+        self.device
     
     def _listen(self, duration):
         '''
@@ -139,7 +172,7 @@ class SpeechToText:
         return
             audio: <Unknown!!!>
         '''
-        with sr.Microphone(device_index = 2) as source:
+        with sr.Microphone(device_index = self._device) as source:
             #r.adjust_for_ambient_noise(source)
             print("Say Something")
             audio = self.r.record(source, duration = duration)
@@ -275,7 +308,7 @@ if __name__ == "__main__":
             [0.643, 0.3045]   # Dark Red
             ]
         )
-    listener = SpeechToText()
+    listener = SpeechToText(debug = True)
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
     
     while(1):
