@@ -204,6 +204,7 @@ class SpeechToText:
         if self._debug:
             print(f"Using device index {self._device} : {self.devices[self._device]}")
         
+        self._check_device()
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
             self.recognizer.adjust_for_ambient_noise(source,duration=10)  
