@@ -4,12 +4,9 @@ import speech_recognition as sr
 import pyaudio
 from rgbxy import Converter
 
-from subprocess import call
 import numpy as np
 from matplotlib import pyplot as plt
 
-import serial
-import pprint
 import requests
 import json
 
