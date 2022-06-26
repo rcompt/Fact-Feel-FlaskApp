@@ -1,13 +1,12 @@
 # imports
 from phue import Bridge
 import speech_recognition as sr
+import pyaudio
 from rgbxy import Converter
 
-from subprocess import call
 import numpy as np
 from matplotlib import pyplot as plt
 
-import serial
 import requests
 import json
 
@@ -125,11 +124,87 @@ class LightOrchestrator:
 
 class SpeechToText:
     
-    def __init__(self):
+    def __init__(self, device = 2, init = False, debug = False):
         
-        self.r = sr.Recognizer()
-        with sr.Microphone(device_index = 2) as source:
-            self.r.adjust_for_ambient_noise(source,duration=10)
+        self._debug = debug
+        
+        if debug:
+            self._device_listings()
+        self._device = device
+        
+        if init:
+            self.initialize()
+
+    
+    @property
+    def device(self):
+        return self._device
+    
+    @device.setter
+    def device(self, device):
+        self._device = device
+    
+    def _device_listings(self):
+        audio = pyaudio.PyAudio()
+        
+        num_devices = audio.get_host_api_info_by_index(0).get("deviceCount",0)
+        device_count = 0
+        self.devices = {}
+        for i in range(0, num_devices):
+            if (audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+                if self._debug:
+                    print("Input Device id ", i, " - ", audio.get_device_info_by_host_api_device_index(0, i).get('name'))
+                    
+                self.devices[i] = audio.get_device_info_by_host_api_device_index(0, i).get('name')
+                device_count += 1
+        if self._debug:
+            print(f"{device_count} devices found through PyAudio.")
+            
+        return self.devices
+        
+    def _set_device(self, device_index):
+        self.device
+        
+    def print_dict(self, dict_):
+        new_str = "{"
+        for elem in dict_:
+            new_str += f"\n\t{elem}: '{dict_[elem]}',\n"
+        new_str = new_str[:-2] +"\n}"
+        return new_str
+        
+        
+    def _check_device(self):
+        audio = pyaudio.PyAudio()
+        if hasattr(self, "device"):
+            try:
+                input_device = audio.get_device_info_by_index(self.device)
+                if input_device.get("maxInputChannels",0) == 0:
+                    raise RuntimeError(
+                        (f"Device selected {input_device.get('name','Unknown')} "
+                         "does not contain any input channels, please select "
+                         "an input device with input channels!\n" + self.print_dict(self._device_listings())
+                         )
+                    )
+            except:
+                raise ValueError(
+                    "Selected device index not present in the list of available "
+                    "devices, please select one of the following:\n" + self.print_dict(self._device_listings())
+                )
+                                         
+                
+        else:
+            raise ValueError("device has not been set for SpeechToText object, please set the 'device' property for this object!")
+        
+    
+    def initialize(self):
+        
+        if self._debug:
+            print(f"Using device index {self._device} : {self.devices[self._device]}")
+        
+        self._check_device()
+        self.recognizer = sr.Recognizer()
+        with sr.Microphone(device_index = self._device) as source:
+            self.recognizer.adjust_for_ambient_noise(source,duration=10)  
     
     def _listen(self, duration):
         '''
@@ -139,12 +214,18 @@ class SpeechToText:
         return
             audio: <Unknown!!!>
         '''
-        with sr.Microphone(device_index = 2) as source:
-            #r.adjust_for_ambient_noise(source)
-            print("Say Something")
-            audio = self.r.record(source, duration = duration)
-            print("got it")
-        return audio
+        
+        if hasattr(self, "recognizer"):
+        
+            with sr.Microphone(device_index = self._device) as source:
+                #r.adjust_for_ambient_noise(source)
+                print("Say Something")
+                audio = self.recognizer.record(source, duration = duration)
+                print("got it")
+            return audio
+        
+        else:
+            raise RuntimeError("_listen() was called before calling initializing the recognizer! Please call initialize() before calling _listen()!")
     
     def _voice(self, audio):
         '''
@@ -155,7 +236,7 @@ class SpeechToText:
             text: str if pass else int
         '''
         try:
-            text = self.r.recognize_google(audio)
+            text = self.recognizer.recognize_google(audio)
             ## call('espeak ' + text, shell = True)
             print("you said: " + text)
             return text
@@ -278,7 +359,7 @@ if __name__ == "__main__":
             [0.643, 0.3045]   # Dark Red
             ]
         )
-    listener = SpeechToText()
+    listener = SpeechToText(init = True, debug = True)
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
     
     while(1):

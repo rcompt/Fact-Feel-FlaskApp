@@ -9,6 +9,7 @@ import os
 import json
 
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS, cross_origin
 import logging
 
 from model.Fact_Feel_Regression import FactFeelRegressor
@@ -20,19 +21,17 @@ ff_model = FactFeelRegressor()
 feat_extractor = FeatureExtractor()      
                   
 app = Flask(__name__)
+CORS(app, supports_credentials = True)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-
-#class NumpyArrayEncoder(JSONEncoder):
-#    def default(self, obj):
-#        if isinstance(obj, numpy.ndarray):
-#            return obj.tolist()
-#        return JSONEncoder.default(self, obj)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route("/")
+@cross_origin()
 def home():
     return render_template("home.html",prediction="2.56")
 
 @app.route("/predict",methods=["POST"])
+@cross_origin()
 def predict():
     if request.data:
         #req_data = request.get_json()
@@ -41,11 +40,12 @@ def predict():
         prediction = ff_model.predict([feats])
 
         predictionData = {'prediction': list(prediction)}
-        #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
-    #    return render_template("home.html",prediction=prediction)
-        return jsonify(predictionData)
+        
+        response = jsonify(predictionData)
+        return response
    
 @app.route("/explain",methods=["POST"])
+@cross_origin()
 def explain():
     if request.data:
         #req_data = request.get_json()
@@ -64,9 +64,9 @@ def explain():
             'prediction': list(prediction),
             'weights': word_weights
         }
-        #encodedPrediction = json.dumps(predictionData, cls=NumpyArrayEncoder)
-    #    return render_template("home.html",prediction=prediction)
-        return jsonify(predictionData)
+
+        response = jsonify(predictionData)
+        return response
 
 if __name__ == "__main__":
     app.run(debug=True)
