@@ -1,5 +1,6 @@
 import tkinter as tk
 import factfeel_client as client
+import json
 import threading
 import queue
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -19,10 +20,25 @@ class FactFeelUI(tk.Tk):
     light_ipaddress = None
     gettrace = None
 
+    # Config
+    ip = None
+    lights = None
+    colors = None
+
     def __init__(self):
         super().__init__()
+        self.parse_config()
         self.init_window()
         self.new_data_queue = queue.Queue()
+
+    # Parse user-specific configuration needed for the API
+    def parse_config(self):
+        with open('config.json') as json_file:
+            data = json.load(json_file)
+            print(f"Config data {data}")
+            self.ip = data["ip"]
+            self.lights = data["lights"]
+            self.colors = data["colors"]
 
     # Creation of init_window
     def init_window(self):
@@ -154,18 +170,11 @@ class FactFeelUI(tk.Tk):
 
     def run_client(self):
         light_orchestrator = client.LightOrchestrator(
-            ip='192.168.0.186',
-            lights=[
-                "Desk Lamp 1",
-                "Desk Lightstrip 1",
-                "Desk Lamp 2"
-            ],
-            colors=[
-                [0.3227, 0.3290],  # White
-                [0.643, 0.3045]  # Dark Red
-            ]
+            ip=self.ip,
+            lights=self.lights,
+            colors=self.colors
         )
-        speech_to_text = client.SpeechToText(init = True)
+        speech_to_text = client.SpeechToText(init=True)
         api = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
 
         seq_num = 1
