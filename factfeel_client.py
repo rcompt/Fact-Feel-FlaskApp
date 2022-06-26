@@ -340,6 +340,9 @@ class FactFeelApi:
         else:
             return fig
 
+    def get_fact_feel_text_data(self):
+        return self.fact_feel_text_data
+
 if __name__ == "__main__":
     all_text = {}
     seq = 1
