@@ -389,7 +389,7 @@ if __name__ == "__main__":
             ]
         )
     listener = SpeechToText(init = True, debug = True)
-    fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
+    fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/explain")
     
     while(1):
         
@@ -397,7 +397,7 @@ if __name__ == "__main__":
                 # data to be sent to api
         if text != 0:
             
-            prediction = fact_feel.fact_feel_explain(text)
+            prediction, _ = fact_feel.fact_feel_explain(text)
             print(f"Recieved prediction of {prediction}")
             
             light_orchestrator.fact_feel_modify_lights(prediction)
