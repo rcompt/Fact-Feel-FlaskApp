@@ -9,7 +9,18 @@ from matplotlib import pyplot as plt
 
 import requests
 import json
+import logging
 
+log_config = {
+        "filename" : "FactFeelApi.log",
+        "filemode" : "a",
+        "level"    : logging.INFO
+    }
+
+logging.basicConfig(**log_config)
+
+from datetime import datetime
+import pytz
 
 
 
@@ -262,7 +273,17 @@ class FactFeelApi:
         
         plt.style.use("fivethirtyeight")
         
+        self.logger = logging.getLogger('api_logger')
+        self.logger.setLevel(logging.INFO)
+        
+        
+        self.timezone = pytz.timezone("America/Los_Angeles")
+        self.logger.info(datetime.now(self.timezone).strftime("%Y-%m-%d %H:%M:%S"))
+        
     def fact_feel_prediction(self, text):
+        
+        self.logger.info(datetime.now(self.timezone).strftime("%Y-%m-%d %H:%M:%S"))
+        self.logger.info(f"Sending Text to Prediction: {text} \n")
         
         text_elem = {
             'TEXT': text,
@@ -292,9 +313,14 @@ class FactFeelApi:
         
         self.seq += 1
         
+        
+        self.logger.info(f"Recieved Prediction: {prediction} \n")
         return prediction
     
     def fact_feel_explain(self, text):
+        
+        self.logger.info(datetime.now(self.timezone).strftime("%Y-%m-%d %H:%M:%S"))
+        self.logger.info(f"Sending Text to Explain: {text} \n")
         
         text_elem = {
             'TEXT': text,
@@ -325,6 +351,9 @@ class FactFeelApi:
             self.plot()
         
         self.seq += 1
+        
+        self.logger.info(f"Recieved Prediction: {prediction} \n")
+        self.logger.info(f"Recieved Weights: {weights} \n")
         
         return prediction, weights
     
@@ -360,7 +389,7 @@ if __name__ == "__main__":
             ]
         )
     listener = SpeechToText(init = True, debug = True)
-    fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/predict")
+    fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/explain")
     
     while(1):
         
@@ -368,7 +397,7 @@ if __name__ == "__main__":
                 # data to be sent to api
         if text != 0:
             
-            prediction = fact_feel.fact_feel_prediction(text)
+            prediction, _ = fact_feel.fact_feel_explain(text)
             print(f"Recieved prediction of {prediction}")
             
             light_orchestrator.fact_feel_modify_lights(prediction)
