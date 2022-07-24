@@ -6,28 +6,22 @@ Created on Fri Dec  6 15:21:41 2019
 """
 
 from __future__ import division
-import urllib
-from bs4 import BeautifulSoup
 
 import pickle
 import re
-import csv
 import os
 import sys
-import nltk, string
-from sklearn.feature_extraction.text import TfidfVectorizer
-import pandas as pd
-import nltk
+import string
+from bs4 import BeautifulSoup
+from collections import Counter, defaultdict
 
 import numpy as np
-
+import pandas as pd
+import nltk
 from nltk.stem import WordNetLemmatizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
-import re
-import string
-from collections import Counter, defaultdict
-from string import punctuation
-
+# Path Handling
 feature_extract_path = os.path.dirname(os.path.abspath(__file__))
 lexicon_path = os.path.join(
     feature_extract_path.split("Fact-Feel-App")[0], 
@@ -220,8 +214,7 @@ class Dictionary():
                 if internal_category_list == '2007' and LIWC2007_number is not None:
                     self._category_lookup[LIWC2007_number]=self._translate_category_name(LIWC2007_short)
 
-    #In case it is needed:
-    #(long_name, LIWC2007_number, LIWC2007_short, LIWC2001_number, LIWC2001_short)
+
     _liwc_categories = [
         ('Total Function Words', 1, 'funct', None, None),
         ('Total Pronouns', 2, 'pronoun', 1, 'pronoun'),
@@ -310,180 +303,15 @@ feat_list_model_order = None
 with open(os.path.join(feature_extract_path, "feature_order.pkl"),"rb") as f_p:
     feat_list_model_order = pickle.load(f_p)
 
-#feat_list_model_order = [
-#        "Word Count",
-#        "Words Per Sentence",
-#        "Six Letter Words",
-#        "Dictionary Words",
-#        "Numerals",
-#        "Total Function Words",
-#        "Total Pronouns",
-#        "Personal Pronouns",
-#        "First Person Singular",
-#        "First Person Plural",
-#        "Second Person",
-#        "Third Person Singular",
-#        "Third Person Plural",
-#        "Impersonal Pronouns",
-#        "Articles",
-#        "Common Verbs",
-#        "Auxiliary Verbs",
-#        "Past Tense",
-#        "Present Tense",
-#        "Future Tense",
-#        "Adverbs",
-#        "Prepositions",
-#        "Conjunctions",
-#        "Negations",
-#        "Quantifiers",
-#        "Number",
-#        "Swear Words",
-#        "Social Processes",
-#        "Family",
-#        "Friends",
-#        "Humans",
-#        "Affective Processes",
-#        'Positive Emotion', 
-#        'Negative Emotion', 
-#        'Anxiety', 
-#        'Anger', 
-#        'Sadness', 
-#        'Cognitive Processes', 
-#        'Insight',
-#        'Causation', 
-#        'Discrepancy', 
-#        'Tentative', 
-#        'Certainty', 
-#        'Inhibition', 
-#        'Inclusive', 
-#        'Exclusive', 
-#        'Perceptual Processes', 
-#        'See', 
-#        'Hear', 
-#        'Feel', 
-#        'Biological Processes', 
-#        'Body', 
-#        'Health', 
-#        'Sexual',
-#        'Ingestion',
-#        'Relativity', 
-#        'Motion', 
-#        'Space', 
-#        'Time', 
-#        'Work',
-#        'Achievement', 
-#        'Leisure', 
-#        'Home', 
-#        'Money', 
-#        'Religion', 
-#        'Death', 
-#        'Assent', 
-#        'Nonfluencies', 
-#        'Fillers', 
-#        "Period",
-#        "Comma",
-#        "Colon",
-#        "Semi Colon",
-#        "Question Mark",
-#        "Exclamation Mark",
-#        "Dash",
-#        "Quote",
-#        "Apostrophe",
-#        "Parenthesis",
-#        "Other Punctuation",
-#        "All Punctuation",
-#        "CC",
-#        "CD",
-#        "DT",
-#        "EX",
-#        "FW",
-#        "IN",
-#        "JJ",
-#        "JJR",
-#        "JJS",
-#        "LS",
-#        "MD",
-#        "NN",
-#        "NNS",
-#        "NNP",
-#        "NNPS",
-#        "PDT",
-#        "POS",
-#        "PRP",
-#        "PRP$",
-#        "RB",
-#        "RBR",
-#        "RBS",
-#        "RP",
-#        "SYM",
-#        "TO",
-#        "UH",
-#        "VB",
-#        "VBD",
-#        "VBG",
-#        "VBN",
-#        "VBP",
-#        "VBZ",
-#        "WDT",
-#        "WP",
-#        "WP$",
-#        "WRB",
-#        "anticipation_emo",
-#        "joy_emo",
-#        "negative_emo",
-#        "sadness_emo",
-#        "disgust_emo",
-#        "positive_emo",
-#        "anger_emo",
-#        "surprise_emo",
-#        "fear_emo",
-#        "trust_emo",
-#        "Strong-subjective",
-#        "Weak-subjective"
-#        ]
-
 POS = None
 with open(os.path.join(feature_extract_path,"POS_dict.pkl"),"rb") as f_p:
     POS = pickle.load(f_p)
 
-#POS = {"JJ":"adj",
-#       "JJR":"adj",
-#       "JJS":"adj",
-#       "NN":"noun",
-#       "NNS":"noun",
-#       "NNP":"noun",
-#       "NNPS":"noun",
-#       "PRP":"noun",
-#       "PRP$":"noun",
-#       "RB":"adverb",
-#       "RBR":"adverb",
-#       "RB$":"adverb",
-#       "VB":"verb",
-#       "VBD":"verb",
-#       "VBG":"verb",
-#       "VBN":"verb",
-#       "VBP":"verb",
-#       "VBZ":"verb"
-#        }
 
 punct_feats = None
 with open(os.path.join(feature_extract_path,"punct_feats.pkl"),"rb") as f_p:
     punct_feats = pickle.load(f_p)
 
-#punct_feats = {
-#        "Period" : ".",
-#        "Comma": ",",
-#        "Colon": ":",
-#        "Semi Colon": ";",
-#        "Question Mark": "?",
-#        "Exclamation Mark": "!",
-#        "Dash": "-",
-#        "Quote": '"',
-#        "Apostrophe": "'",
-#        "Parenthesis": "()",
-#        "Other Punctuation": '#$%&*+/<=>@[\\]^_`{|}~',
-#        "All Punctuation": ""
-#        }
 
 strong_pos_adjectives = ["incredible", "wellwritten", "great", "excellent",
                          "successful", "outstanding", "impressive", "best", "highest",
@@ -528,103 +356,6 @@ _liwc_categories = None
 with open(os.path.join(feature_extract_path,"liwc_categories.pkl"),"rb") as f_p:
     _liwc_categories = pickle.load(f_p)
 
-#_liwc_categories = [
-#    'Unique Words',
-#    'Dictionary Words',
-#    'Other Punctuation',
-#    'Numerals',
-#    'Six Letter Words',
-#    'Word Count',
-#    'Sentences',
-#    'Words Per Sentence',
-#    'Total Function Words',
-#    'Total Pronouns',
-#    'Personal Pronouns',
-#    'First Person Singular', 
-#    'First Person Plural', 
-#    'Second Person',
-#    'Third Person Singular', 
-#    'Third Person Plural', 
-#    'Impersonal Pronouns', 
-#    'Articles',
-#    'Common Verbs', 
-#    'Auxiliary Verbs', 
-#    'Past Tense', 
-#    'Present Tense', 
-#    'Future Tense', 
-#    'Adverbs', 
-#    'Prepositions', 
-#    'Conjunctions', 
-#    'Negations', 
-#    'Quantifiers', 
-#    'Number', 
-#    'Swear Words', 
-#    'Social Processes', 
-#    'Family', 
-#    'Friends', 
-#    'Humans', 
-#    'Affective Processes',
-#    'Positive Emotion', 
-#    'Negative Emotion', 
-#    'Anxiety', 
-#    'Anger', 
-#    'Sadness', 
-#    'Cognitive Processes', 
-#    'Insight',
-#    'Causation', 
-#    'Discrepancy', 
-#    'Tentative', 
-#    'Certainty', 
-#    'Inhibition', 
-#    'Inclusive', 
-#    'Exclusive', 
-#    'Perceptual Processes', 
-#    'See', 
-#    'Hear', 
-#    'Feel', 
-#    'Biological Processes', 
-#    'Body', 
-#    'Health', 
-#    'Sexual',
-#    'Ingestion',
-#    'Relativity', 
-#    'Motion', 
-#    'Space', 
-#    'Time', 
-#    'Work',
-#    'Achievement', 
-#    'Leisure', 
-#    'Home', 
-#    'Money', 
-#    'Religion', 
-#    'Death', 
-#    'Assent', 
-#    'Nonfluencies', 
-#    'Fillers', 
-#    'Total first person',
-#    'Total third person']
-
-#LIWC features
-
-#tests:
-#jan 1, 2010 = 2 words
-#1 jan, 2010 = 3 words
-#Jan 1? so soon! = 1 sentence
-#lkhj.iou = 1 word
-#lkhj.'iou = 2 words
-#lkhj'.iou = 1 word
-# 1)2)3)4)5)6)7)8)9 = 2 words...?
-# 1]2]3]4]5}6}7}8]9 = 1 word
-# 1 2 3 4 5 6 7 8 9 = 1 word
-# 1!2@3#4$5%6^7&8*9~0`0'0;0:0[0{0]0}0.0,0-0_0=0+0|0\0>0<0"0 0 0.0 = 1 word
-# 1..2 = 1 word
-# a..b = 2 words
-# a.b = 1 word
-# the "cat". the dog. = 1 sentence
-# b :) :) c :) = 4 words, two unique
-# asdf... = not a sentence
-# asdf = not a sentence
-# Mr. = sentence
 
 def score_text(text, _dictionary,raw_counts=False, scores=None, unique_words=None):
     """Returns a sparse counter object of word frequencies or counts if raw_counts is specified
@@ -936,10 +667,8 @@ class FeatureExtractor():
             word = subj_parsed[index]
             if word != '':
                 
-    #            parts = ptags[index]
                 w = word
                 pos = ptags[index]
-    #            lem = parts[2]
                 #Get Subjectivity Features 
                 if w.lower() in self.subj_dic:
                     pos_temp = POS.get(pos,"anypos")
@@ -948,13 +677,6 @@ class FeatureExtractor():
                         polarity = subj + "-" + self.subj_dic[w.lower()][pos_temp]['priorpolarity']
                         if polarity in subj_cats:
                             feats[polarity] += 1
-    #            elif lem in subj_dic:
-    #                pos_temp = POS.get(pos,"anypos")
-    #                if pos_temp in subj_dic[lem]:
-    #                    subj = subj_dic[lem][pos_temp]["type"].replace("subj","")
-    #                    polarity = subj + "-" + subj_dic[lem][pos_temp]['priorpolarity']
-    #                    if polarity in subj_cats:
-    #                        feats[polarity] += 1
                 #Get Please features
                 if w.lower() == "please":
                     if index != len(subj_parsed)-1:
@@ -979,14 +701,6 @@ class FeatureExtractor():
                 feats[feat] = liwc_feats[feat]
         for feat in feats:
             if feat not in liwc_feats:
-    #            print(feat)
-    #            print(type(feats[feat]))
-    #            print(liwc_feats['Word Count'])
-    ##            print(type(liwc_feats['Word Count']))
-    #            if feat == "subj":
-    #                for elem in subj_cats:
-    #                    feats[feat][elem] = (feats[feat][elem] / liwc_feats['Word Count'])*100.0
-    #            else:
                 if liwc_feats['Word Count'] == 0:
                     feats[feat] = 0.0
                 else:
@@ -1071,8 +785,7 @@ class FeatureExtractor():
             else:
                 feats[t] = (tag_dic[t] / float(len(ptags)))
         wnl = WordNetLemmatizer()
-        subj_parsed = [wnl.lemmatize(i) for i in nltk.word_tokenize(text)]
-    #    subj_parsed = parse(text,chunks=False,lemmata=True).split(' ') 
+        subj_parsed = [wnl.lemmatize(i) for i in nltk.word_tokenize(text)] 
         	#EMOTION LEXICON FEATURE EXTRACTION
     		#Use pattern.parse to get the parsed text
         words = subj_parsed[:]
@@ -1086,8 +799,6 @@ class FeatureExtractor():
         for key in self.emo_dic[list(self.emo_dic.keys())[0]]:
             results[key] = 0.0
     		#Separate the words given from pattern.parse into a list
-    #    for word_emo in subj_parsed:
-    #        words.append(word_emo.split('/')[0])
     		
         for word in words:
     			#To ensure the word is in the lexicon match the case by making all text lower case
@@ -1144,10 +855,8 @@ class FeatureExtractor():
             word = subj_parsed[index]
             if word != '':
                 
-    #            parts = ptags[index]
                 w = word
                 pos = ptags[index]
-    #            lem = parts[2]
                 #Get Subjectivity Features 
                 if w.lower() in self.subj_dic:
                     w =  w.lower()
@@ -1166,13 +875,6 @@ class FeatureExtractor():
                             # Add feature to explain_dict
                             feats_explain_dict[w].add(cat+"_emo")
                             
-    #            elif lem in subj_dic:
-    #                pos_temp = POS.get(pos,"anypos")
-    #                if pos_temp in subj_dic[lem]:
-    #                    subj = subj_dic[lem][pos_temp]["type"].replace("subj","")
-    #                    polarity = subj + "-" + subj_dic[lem][pos_temp]['priorpolarity']
-    #                    if polarity in subj_cats:
-    #                        feats[polarity] += 1
                 #Get Please features
                 if w.lower() == "please":
                     if index != len(subj_parsed)-1:
@@ -1203,14 +905,6 @@ class FeatureExtractor():
                 feats[feat] = liwc_feats[feat]
         for feat in feats:
             if feat not in liwc_feats:
-    #            print(feat)
-    #            print(type(feats[feat]))
-    #            print(liwc_feats['Word Count'])
-    ##            print(type(liwc_feats['Word Count']))
-    #            if feat == "subj":
-    #                for elem in subj_cats:
-    #                    feats[feat][elem] = (feats[feat][elem] / liwc_feats['Word Count'])*100.0
-    #            else:
                 if liwc_feats['Word Count'] == 0:
                     feats[feat] = 0.0
                 else:
