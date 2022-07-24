@@ -108,7 +108,22 @@ class LightOrchestrator:
         
         self.spectrum_to_color()
     
+    def check_spectrum_bounds(self):
+        for idx, light in enumerate(self.light_order):
+            self.lamp_spectrum_state[self.light_order[idx]] = min(
+                self.lamp_spectrum_state[self.light_order[idx]], 
+                len(self.spectrum) - 1
+            )            
+            
+            self.lamp_spectrum_state[self.light_order[idx]] = max(
+                self.lamp_spectrum_state[self.light_order[idx]], 
+                0
+            )
+    
     def spectrum_to_color(self):
+        
+        self.check_spectrum_bounds()
+        
         if len(self.light_order) == 1:
             self.lamp_colors[self.light_order[0]] = self.spectrum[self.lamp_spectrum_state[self.light_order[0]]]
         else:
@@ -202,7 +217,6 @@ class SpeechToText:
                     "devices, please select one of the following:\n" + self.print_dict(self._device_listings())
                 )
                                          
-                
         else:
             raise ValueError("device has not been set for SpeechToText object, please set the 'device' property for this object!")
         
