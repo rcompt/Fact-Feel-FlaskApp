@@ -1,3 +1,4 @@
+import socket
 import tkinter as tk
 import factfeel_client as client
 import json
@@ -36,9 +37,40 @@ class FactFeelUI(tk.Tk):
         with open('config.json') as json_file:
             data = json.load(json_file)
             print(f"Config data {data}")
-            self.ip = data["ip"]
+
+            ip = data["ip"]
+            self.validate_ip(ip)
+            self.ip = ip
+
+            lights = data["lights"]
+            self.validate_light_list(lights)
             self.lights = data["lights"]
+
+            colors = data["colors"]
+            self.validate_colors(colors)
             self.colors = data["colors"]
+
+    # Validates the IP address by attempting to convert it to 32-bit packed binary format
+    # Will raise exception if ip address is invalid
+    @staticmethod
+    def validate_ip(ip):
+        socket.inet_aton(ip)
+
+    # Validates that the light list is 1. a list and 2. contains only strings
+    # Will raise exception if light list is invalid
+    @staticmethod
+    def validate_light_list(lights):
+        if not all(isinstance(item, str) for item in lights):
+            raise Exception("Light list is not in correct format. Must be list of string")
+
+    # Validates that the color array is 1. 2-dimentional and 2. contains only floats
+    # Will raise exception if color list is invalid
+    @staticmethod
+    def validate_colors(colors):
+        if not len(colors) == 2:
+            raise Exception("Colors array is not in correct format. Must be two-dimensional")
+        if not all(all(isinstance(item, float) for item in items) for items in colors):
+            raise Exception("Colors array must only contain floats")
 
     # Creation of init_window
     def init_window(self):
@@ -153,6 +185,7 @@ class FactFeelUI(tk.Tk):
 
     @staticmethod
     def plot(fact_feel_text_data):
+        plt.clf()
         fig, ax = plt.subplots()
 
         if fact_feel_text_data is not None:
