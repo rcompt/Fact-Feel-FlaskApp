@@ -16,7 +16,6 @@ class FactFeelUI(tk.Tk):
     # Globals
     speech_to_text_widget = None
     prediction_tracker_canvas = None
-    prediction_tracker_figure = None
     new_data_queue = []
     api_thread = None
     light_ipaddress = None
@@ -126,9 +125,7 @@ class FactFeelUI(tk.Tk):
             fig = self.plot(new_data)
 
             for item in self.prediction_tracker_canvas.get_tk_widget().find_all():
-                print(f"testing")
                 self.prediction_tracker_canvas.get_tk_widget().delete(item)
-
 
             self.prediction_tracker_canvas = FigureCanvasTkAgg(fig, self)
             self.prediction_tracker_canvas.draw()
@@ -192,7 +189,7 @@ class FactFeelUI(tk.Tk):
 
     @staticmethod
     def plot(fact_feel_text_data):
-        #plt.clf()
+
         fig, ax = plt.subplots()
 
         if fact_feel_text_data is not None:
