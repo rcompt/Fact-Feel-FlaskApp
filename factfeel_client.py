@@ -231,6 +231,13 @@ class SpeechToText:
         self._check_device()
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
+            playsound(
+                os.path.join(
+                    "Fact-Feel-App",
+                    "resources",
+                    "Im_Listening.mp3"
+                )
+            )
             self.recognizer.adjust_for_ambient_noise(source,duration=10)  
     
     def _listen(self, duration):
@@ -243,13 +250,7 @@ class SpeechToText:
         '''
         
         if hasattr(self, "recognizer"):
-            playsound(
-                os.path.join(
-                    "Fact-Feel-App",
-                    "resources",
-                    "Im_Listening.mp3"
-                )
-            )
+
             with sr.Microphone(device_index = self._device) as source:
                 #r.adjust_for_ambient_noise(source)
                 print("Say Something")
