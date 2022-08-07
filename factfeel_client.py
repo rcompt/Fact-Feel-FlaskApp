@@ -3,6 +3,7 @@ from phue import Bridge
 import speech_recognition as sr
 import pyaudio
 from rgbxy import Converter
+from playsound import playsound
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -21,6 +22,7 @@ logging.basicConfig(**log_config)
 
 from datetime import datetime
 import pytz
+import os
 
 
 
@@ -229,6 +231,13 @@ class SpeechToText:
         self._check_device()
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
+            playsound(
+                os.path.join(
+                    "Fact-Feel-App",
+                    "resources",
+                    "Im_Listening.mp3"
+                )
+            )
             self.recognizer.adjust_for_ambient_noise(source,duration=10)  
     
     def _listen(self, duration):
@@ -241,7 +250,7 @@ class SpeechToText:
         '''
         
         if hasattr(self, "recognizer"):
-        
+
             with sr.Microphone(device_index = self._device) as source:
                 #r.adjust_for_ambient_noise(source)
                 print("Say Something")
