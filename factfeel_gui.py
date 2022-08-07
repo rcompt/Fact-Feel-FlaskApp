@@ -28,12 +28,13 @@ class FactFeelUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.parse_config()
+        self.parse_config_file()
         self.init_window()
         self.new_data_queue = queue.Queue()
+        self.run_client_cmd()
 
     # Parse user-specific configuration needed for the API
-    def parse_config(self):
+    def parse_config_file(self):
         with open('config.json') as json_file:
             data = json.load(json_file)
             print(f"Config data {data}")
@@ -89,7 +90,7 @@ class FactFeelUI(tk.Tk):
         # Menu bar
         menu_bar = tk.Menu(self)
         config_menu = tk.Menu(menu_bar, tearoff=0)
-        config_menu.add_command(label="Config", command=self.config_app_cmd)
+        config_menu.add_command(label="Config", command=self.runtime_update_app_config_cmd)
         menu_bar.add_cascade(label="Config", menu=config_menu)
         self.config(menu=menu_bar)
 
@@ -104,8 +105,6 @@ class FactFeelUI(tk.Tk):
         # Set up main speech-to-text textbox. This displays what the speech recognition converts to text
         self.speech_to_text_widget = tk.Text(self, wrap="word", borderwidth=3)
         self.speech_to_text_widget.grid(row=0, column=0, sticky='nsew')
-
-        self.run_client_cmd()
 
         clear_text_button = tk.Button(self, text="Clear Text", command=self.clear_text_cmd)
         clear_text_button.grid(row=1, column=0, sticky='nsew')
@@ -137,7 +136,12 @@ class FactFeelUI(tk.Tk):
         if isinstance(text, str):
             self.speech_to_text_widget.insert(tk.END, text + '\n')
 
-    def config_app_cmd(self):
+    def runtime_update_app_config_cmd(self):
+        self.api_thread.join()
+        self.setup_runtime_config_popup()
+        self.run_client_cmd()
+
+    def setup_runtime_config_popup(self):
         config_popup = tk.Toplevel(self)
         config_popup.geometry(self.window_size)
         config_popup.title("Configure Fact/Feel")
@@ -153,22 +157,11 @@ class FactFeelUI(tk.Tk):
         config_popup.resizable(width=False, height=False)
         config_popup.columnconfigure(0, weight=1)
         config_popup.columnconfigure(1, weight=10)
-        config_popup.columnconfigure(2, weight=1)
-        config_popup.columnconfigure(3, weight=10)
-        config_popup.columnconfigure(4, weight=1)
-        config_popup.columnconfigure(5, weight=10)
-        config_popup.columnconfigure(6, weight=1)
-        config_popup.columnconfigure(7, weight=1)
         config_popup.rowconfigure(0, weight=1, rowheight=100)
         config_popup.rowconfigure(1, weight=100)
 
         first_octet_text = tk.Text(config_popup).grid(row=0, column=0, sticky='news')
         tk.Label(config_popup, text=".").grid(row=0, column=1, sticky='news')
-        second_octet_text = tk.Text(config_popup).grid(row=0, column=2, sticky='news')
-        tk.Label(config_popup, text=".").grid(row=0, column=3, sticky='news')
-        third_octet_text = tk.Text(config_popup).grid(row=0, column=4, sticky='news')
-        tk.Label(config_popup, text=".").grid(row=0, column=5, sticky='news')
-        fourth_octet_text = tk.Text(config_popup).grid(row=0, column=6, sticky='news')
 
         update_ip_button = tk.Button(config_popup, text="Update IP Address", command=self.update_ipaddress_cmd)
         update_ip_button.grid(row=0, column=7, sticky='news')
