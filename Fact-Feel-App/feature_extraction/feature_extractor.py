@@ -15,7 +15,6 @@ import string
 from collections import Counter, defaultdict
 
 import numpy as np
-import nltk
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -307,7 +306,92 @@ class Dictionary():
                     self._category_lookup[LIWC2007_number]=self._translate_category_name(LIWC2007_short)
 
 
+<<<<<<< HEAD
 
+=======
+    _liwc_categories = [
+        ('Total Function Words', 1, 'funct', None, None),
+        ('Total Pronouns', 2, 'pronoun', 1, 'pronoun'),
+        ('Personal Pronouns', 3, 'ppron', None, None),
+        ('First Person Singular', 4, 'i', 2, 'i'),
+        ('First Person Plural', 5, 'we', 3, 'we'),
+        ('Second Person', 6, 'you', 5, 'you'),
+        ('Third Person Singular', 7, 'shehe', None, None),
+        ('Third Person Plural', 8, 'they', None, None),
+        ('Impersonal Pronouns', 9, 'ipron', None, None),
+        ('Articles', 10, 'article', 9, 'article'),
+        ('Common Verbs', 11, 'verb', None, None),
+        ('Auxiliary Verbs', 12, 'auxverb', None, None),
+        ('Past Tense', 13, 'past', 38, 'past'),
+        ('Present Tense', 14, 'present', 39, 'present'),
+        ('Future Tense', 15, 'future', 40, 'future'),
+        ('Adverbs', 16, 'adverb', None, None),
+        ('Prepositions', 17, 'preps', 10, 'preps'),
+        ('Conjunctions', 18, 'conj', None, None),
+        ('Negations', 19, 'negate', 7, 'negate'),
+        ('Quantifiers', 20, 'quant', None, None),
+        ('Number', 21, 'number', 11, 'number'),
+        ('Swear Words', 22, 'swear', 66, 'swear'),
+        ('Social Processes', 121, 'social', 31, 'social'),
+        ('Family', 122, 'family', 35, 'family'),
+        ('Friends', 123, 'friend', 34, 'friends'),
+        ('Humans', 124, 'humans', 36, 'humans'),
+        ('Affective Processes', 125, 'affect', 12, 'affect'),
+        ('Positive Emotion', 126, 'posemo', 13, 'posemo'),
+        ('Negative Emotion', 127, 'negemo', 16, 'negemo'),
+        ('Anxiety', 128, 'anx', 17, 'anx'),
+        ('Anger', 129, 'anger', 18, 'anger'),
+        ('Sadness', 130, 'sad', 19, 'sad'),
+        ('Cognitive Processes', 131, 'cogmech', 20, 'cogmech'),
+        ('Insight', 132, 'insight', 22, 'insight'),
+        ('Causation', 133, 'cause', 21, 'cause'),
+        ('Discrepancy', 134, 'discrep', 23, 'discrep'),
+        ('Tentative', 135, 'tentat', 25, 'tentat'),
+        ('Certainty', 136, 'certain', 26, 'certain'),
+        ('Inhibition', 137, 'inhib', 24, 'inhib'),
+        ('Inclusive', 138, 'incl', 44, 'incl'),
+        ('Exclusive', 139, 'excl', 45, 'excl'),
+        ('Perceptual Processes', 140, 'percept', 27, 'senses'),
+        ('See', 141, 'see', 28, 'see'),
+        ('Hear', 142, 'hear', 29, 'hear'),
+        ('Feel', 143, 'feel', 30, 'feel'),
+        ('Biological Processes', 146, 'bio', None, None),
+        ('Body', 147, 'body', 61, 'body'),
+        ('Health', 148, 'health', None, None),
+        ('Sexual', 149, 'sexual', 62, 'sexual'),
+        ('Ingestion', 150, 'ingest', 63, 'eating'),
+        ('Relativity', 250, 'relativ', None, None),
+        ('Motion', 251, 'motion', 46, 'motion'),
+        ('Space', 252, 'space', 41, 'space'),
+        ('Time', 253, 'time', 37, 'time'),
+        ('Work', 354, 'work', 49, 'job'),
+        ('Achievement', 355, 'achieve', 50, 'achieve'),
+        ('Leisure', 356, 'leisure', 51, 'leisure'),
+        ('Home', 357, 'home', 52, 'home'),
+        ('Money', 358, 'money', 56, 'money'),
+        ('Religion', 359, 'relig', 58, 'relig'),
+        ('Death', 360, 'death', 59, 'death'),
+        ('Assent', 462, 'assent', 8, 'assent'),
+        ('Nonfluencies', 463, 'nonfl', 67, 'nonfl'),
+        ('Fillers', 464, 'filler', 68, 'fillers'),
+        ('Total first person', None, None, 4, 'self'),
+        ('Total third person', None, None, 6, 'other'),
+        ('Positive feelings', None, None, 14, 'posfeel'),
+        ('Optimism and energy', None, None, 15, 'optim'),
+        ('Communication', None, None, 32, 'comm'),
+        ('Other references to people', None, None, 33, 'othref'),
+        ('Up', None, None, 42, 'up'),
+        ('Down', None, None, 43, 'down'),
+        ('Occupation', None, None, 47, 'occup'),
+        ('School', None, None, 48, 'school'),
+        ('Sports', None, None, 53, 'sports'),
+        ('TV', None, None, 54, 'tv'),
+        ('Music', None, None, 55, 'music'),
+        ('Metaphysical issues', None, None, 57, 'metaph'),
+        ('Physical states and functions', None, None, 60, 'physcal'),
+        ('Sleeping', None, None, 64, 'sleep'),
+        ('Grooming', None, None, 65, 'groom')]
+>>>>>>> 61363e3 (Removed commented code)
 
 
 feat_list_model_order = None
