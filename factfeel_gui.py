@@ -18,6 +18,7 @@ class FactFeelUI(tk.Tk):
     prediction_tracker_canvas = None
     new_data_queue = []
     api_thread = None
+    api_thread_stop_signal = None
     light_ipaddress = None
     gettrace = None
 
@@ -31,6 +32,7 @@ class FactFeelUI(tk.Tk):
         self.parse_config_file()
         self.init_window()
         self.new_data_queue = queue.Queue()
+        self.api_thread_stop_signal = threading.Event()
         self.run_client_cmd()
 
     # Parse user-specific configuration needed for the API
@@ -137,6 +139,8 @@ class FactFeelUI(tk.Tk):
             self.speech_to_text_widget.insert(tk.END, text + '\n')
 
     def runtime_update_app_config_cmd(self):
+        # Set the event that will cause the thread to stop
+        self.api_thread_stop_signal.set()
         self.api_thread.join()
         self.setup_runtime_config_popup()
         self.run_client_cmd()
@@ -154,17 +158,18 @@ class FactFeelUI(tk.Tk):
             config_popup.attributes("-fullscreen", False)
             config_popup.resizable(width=False, height=False)
 
-        config_popup.resizable(width=False, height=False)
         config_popup.columnconfigure(0, weight=1)
-        config_popup.columnconfigure(1, weight=10)
-        config_popup.rowconfigure(0, weight=1, rowheight=100)
-        config_popup.rowconfigure(1, weight=100)
+        config_popup.columnconfigure(1, weight=1)
+        config_popup.columnconfigure(2, weight=1)
+        config_popup.columnconfigure(3, weight=1)
+        config_popup.rowconfigure(0, weight=1)
+        config_popup.rowconfigure(1, weight=1)
 
-        first_octet_text = tk.Text(config_popup).grid(row=0, column=0, sticky='news')
-        tk.Label(config_popup, text=".").grid(row=0, column=1, sticky='news')
+        tk.Label(config_popup, text='IP Address:').grid(row=0, column=0, sticky='news')
+        tk.Text(config_popup).grid(row=0, column=1, sticky='news')
 
-        update_ip_button = tk.Button(config_popup, text="Update IP Address", command=self.update_ipaddress_cmd)
-        update_ip_button.grid(row=0, column=7, sticky='news')
+        tk.Button(config_popup, text='Save').grid(row=3, column=0, sticky='news')
+        tk.Button(config_popup, text='Cancel').grid(row=3, column=1, sticky='news')
 
     def update_ipaddress_cmd(self, new_ipaddress):
         self.light_ipaddress = new_ipaddress
@@ -173,6 +178,7 @@ class FactFeelUI(tk.Tk):
         self.speech_to_text_widget.delete("1.0", tk.END)
 
     def run_client_cmd(self):
+        self.api_thread_stop_signal.clear()
         self.api_thread = threading.Thread(target=self.run_client)
         self.api_thread.daemon = True
 
@@ -209,7 +215,8 @@ class FactFeelUI(tk.Tk):
 
         seq_num = 1
 
-        while self.api_thread.is_alive():
+        while not self.api_thread_stop_signal.is_set():
+            print(f"Thread is_alive() is: ", self.api_thread.is_alive())
             text = speech_to_text.listen_transcribe()
 
             self.update_text(text)
