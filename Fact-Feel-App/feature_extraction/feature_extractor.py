@@ -15,6 +15,7 @@ import string
 from collections import Counter, defaultdict
 
 import numpy as np
+import nltk
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -42,8 +43,6 @@ class Dictionary():
         self._TYPE_BASIC = 'basic'
         self._TYPE_PRE = 'pre'
         self._TYPE_POST = 'post'
-
-        self._setup_category_lookup(internal_category_list, use_long_category_names)
         
         self._liwc_categories = [
             ('Total Function Words', 1, 'funct', None, None),
@@ -135,6 +134,8 @@ class Dictionary():
         
         self._dictionary_line_re = re.compile(r'^(?P<word>\S+)\s+(?P<categories>.+)$')
         self._dictionary_line_categories_re = re.compile(r'(\d+|\<(\w+(\s+\w+)*)\>(\d+)(\/(\d+))?|\(\s*(\d+(\s+\d+)*)\s*\)(\d+)(\/(\d+))?)')
+        
+        self._setup_category_lookup(internal_category_list, use_long_category_names)
         
         try:
             self.load_dictionary_file(filename, internal_category_list)
@@ -306,94 +307,6 @@ class Dictionary():
                     self._category_lookup[LIWC2007_number]=self._translate_category_name(LIWC2007_short)
 
 
-<<<<<<< HEAD
-
-=======
-    _liwc_categories = [
-        ('Total Function Words', 1, 'funct', None, None),
-        ('Total Pronouns', 2, 'pronoun', 1, 'pronoun'),
-        ('Personal Pronouns', 3, 'ppron', None, None),
-        ('First Person Singular', 4, 'i', 2, 'i'),
-        ('First Person Plural', 5, 'we', 3, 'we'),
-        ('Second Person', 6, 'you', 5, 'you'),
-        ('Third Person Singular', 7, 'shehe', None, None),
-        ('Third Person Plural', 8, 'they', None, None),
-        ('Impersonal Pronouns', 9, 'ipron', None, None),
-        ('Articles', 10, 'article', 9, 'article'),
-        ('Common Verbs', 11, 'verb', None, None),
-        ('Auxiliary Verbs', 12, 'auxverb', None, None),
-        ('Past Tense', 13, 'past', 38, 'past'),
-        ('Present Tense', 14, 'present', 39, 'present'),
-        ('Future Tense', 15, 'future', 40, 'future'),
-        ('Adverbs', 16, 'adverb', None, None),
-        ('Prepositions', 17, 'preps', 10, 'preps'),
-        ('Conjunctions', 18, 'conj', None, None),
-        ('Negations', 19, 'negate', 7, 'negate'),
-        ('Quantifiers', 20, 'quant', None, None),
-        ('Number', 21, 'number', 11, 'number'),
-        ('Swear Words', 22, 'swear', 66, 'swear'),
-        ('Social Processes', 121, 'social', 31, 'social'),
-        ('Family', 122, 'family', 35, 'family'),
-        ('Friends', 123, 'friend', 34, 'friends'),
-        ('Humans', 124, 'humans', 36, 'humans'),
-        ('Affective Processes', 125, 'affect', 12, 'affect'),
-        ('Positive Emotion', 126, 'posemo', 13, 'posemo'),
-        ('Negative Emotion', 127, 'negemo', 16, 'negemo'),
-        ('Anxiety', 128, 'anx', 17, 'anx'),
-        ('Anger', 129, 'anger', 18, 'anger'),
-        ('Sadness', 130, 'sad', 19, 'sad'),
-        ('Cognitive Processes', 131, 'cogmech', 20, 'cogmech'),
-        ('Insight', 132, 'insight', 22, 'insight'),
-        ('Causation', 133, 'cause', 21, 'cause'),
-        ('Discrepancy', 134, 'discrep', 23, 'discrep'),
-        ('Tentative', 135, 'tentat', 25, 'tentat'),
-        ('Certainty', 136, 'certain', 26, 'certain'),
-        ('Inhibition', 137, 'inhib', 24, 'inhib'),
-        ('Inclusive', 138, 'incl', 44, 'incl'),
-        ('Exclusive', 139, 'excl', 45, 'excl'),
-        ('Perceptual Processes', 140, 'percept', 27, 'senses'),
-        ('See', 141, 'see', 28, 'see'),
-        ('Hear', 142, 'hear', 29, 'hear'),
-        ('Feel', 143, 'feel', 30, 'feel'),
-        ('Biological Processes', 146, 'bio', None, None),
-        ('Body', 147, 'body', 61, 'body'),
-        ('Health', 148, 'health', None, None),
-        ('Sexual', 149, 'sexual', 62, 'sexual'),
-        ('Ingestion', 150, 'ingest', 63, 'eating'),
-        ('Relativity', 250, 'relativ', None, None),
-        ('Motion', 251, 'motion', 46, 'motion'),
-        ('Space', 252, 'space', 41, 'space'),
-        ('Time', 253, 'time', 37, 'time'),
-        ('Work', 354, 'work', 49, 'job'),
-        ('Achievement', 355, 'achieve', 50, 'achieve'),
-        ('Leisure', 356, 'leisure', 51, 'leisure'),
-        ('Home', 357, 'home', 52, 'home'),
-        ('Money', 358, 'money', 56, 'money'),
-        ('Religion', 359, 'relig', 58, 'relig'),
-        ('Death', 360, 'death', 59, 'death'),
-        ('Assent', 462, 'assent', 8, 'assent'),
-        ('Nonfluencies', 463, 'nonfl', 67, 'nonfl'),
-        ('Fillers', 464, 'filler', 68, 'fillers'),
-        ('Total first person', None, None, 4, 'self'),
-        ('Total third person', None, None, 6, 'other'),
-        ('Positive feelings', None, None, 14, 'posfeel'),
-        ('Optimism and energy', None, None, 15, 'optim'),
-        ('Communication', None, None, 32, 'comm'),
-        ('Other references to people', None, None, 33, 'othref'),
-        ('Up', None, None, 42, 'up'),
-        ('Down', None, None, 43, 'down'),
-        ('Occupation', None, None, 47, 'occup'),
-        ('School', None, None, 48, 'school'),
-        ('Sports', None, None, 53, 'sports'),
-        ('TV', None, None, 54, 'tv'),
-        ('Music', None, None, 55, 'music'),
-        ('Metaphysical issues', None, None, 57, 'metaph'),
-        ('Physical states and functions', None, None, 60, 'physcal'),
-        ('Sleeping', None, None, 64, 'sleep'),
-        ('Grooming', None, None, 65, 'groom')]
->>>>>>> 61363e3 (Removed commented code)
-
-
 feat_list_model_order = None
 with open(os.path.join(feature_extract_path, "feature_order.pkl"),"rb") as f_p:
     feat_list_model_order = pickle.load(f_p)
@@ -452,74 +365,6 @@ with open(os.path.join(feature_extract_path,"liwc_categories.pkl"),"rb") as f_p:
     _liwc_categories = pickle.load(f_p)
 
 
-def score_text(text, _dictionary,raw_counts=False, scores=None, unique_words=None):
-    """Returns a sparse counter object of word frequencies or counts if raw_counts is specified
-        @param scores: If you want to keep a running total, Scores should be
-            a Counter of previous counts and raw_counts should be set to True!
-        @param unique_words: Again, will be created if None. Should be a set().
-            If used, you'll probably want to override the scores['Unique Words'] category.
-    """
-    assert _dictionary is not None, 'Dictionary not loaded, you need to load a .dic file, perhaps from LIWC...'
-    if scores is None: scores = Counter()
-    if unique_words is None: unique_words = set()
-    _liwc_tokenizer = re.compile(r'(\d[^a-z\(\)]*|[a-z](?:[\'\.]?[a-z])*|(?<=[a-z])[^a-z0-9\s\(\)]+|[\(\)][^a-z]*)',re.UNICODE|re.IGNORECASE)
-    
-    sentence_terminated = True
-    for line in text.strip().split('\n'):
-        all_tokens = _liwc_tokenizer.findall(line.strip().lower())
-        if not all_tokens:
-            continue
-        for i in range(len(all_tokens)):
-            token = all_tokens[i]
-            if len(token)==0: continue
-
-            if token[0].isdigit(): #Numbers
-                scores.update(_dictionary.score_word(token))
-                sentence_terminated=False
-            elif token[0].isalpha(): #Words
-                unique_words.add(token)
-                previous_token = all_tokens[i-1] if i>0 else ''
-                next_token = all_tokens[i+1] if i<len(all_tokens)-1 else ''
-                scores.update(_dictionary.score_word(token, previous_token, next_token))
-                sentence_terminated=False
-            else: #Punctuation and stuff
-                scores.update(_dictionary.score_word(token))
-
-            if token in Dictionary.sentence_punctuation and not sentence_terminated:
-                scores['Sentences']+=1
-                sentence_terminated = True
-
-    if not sentence_terminated:
-        scores['Sentences'] += 1
-
-    scores['Unique Words'] = len(unique_words)
-    scores['Words Per Sentence'] = scores['Word Count']/scores['Sentences'] if scores['Sentences'] > 0 else 0
-
-    if not raw_counts:
-        scores = normalize_scores(scores)
-
-    return scores
-
-def score_file(filename, raw_counts=False, scores=None, unique_words=None):
-    return score_text(open(filename).read(), raw_counts=raw_counts, scores=scores, unique_words=unique_words)
-
-def normalize_scores(scores, bound_scores=True):
-    """@summary: Converts counts to percentages"""
-    new_scores = Counter()
-    for category, score in list(scores.items()):
-        if category not in {'Word Count', 'Sentences', 'Words Per Sentence', 'Newlines'}:
-            if scores['Word Count'] > 0:
-                score = 100.0*score/scores['Word Count']
-            elif score > 0:
-                score = 100.0
-            else:
-                score = 0.0
-            if bound_scores:  # Since certain categories can exceed word count
-                score = min(100.0, max(0.0, score))  # Bounds it to [0,100]
-        new_scores[category] = score
-    return new_scores
-
-
 class FeatureExtractor():
     
     def __init__(self):
@@ -528,17 +373,17 @@ class FeatureExtractor():
         
     def _load_lexicons(self):
         self.subj_dic = pickle.load(open(os.path.join(lexicon_path,'subjective_lexicon_dic_py3.pkl'),'rb'),encoding="latin-1")
+        
         self._dictionary = None
         self.load_dictionary(self.default_dictionary_filename())
+        
         #Load the emotion lexicon dictionary
-        p_file = open(os.path.join(lexicon_path,"Emotion-Lexicon-Dictionary_py3.pkl"),"rb")
-        self.emo_dic = pickle.load(p_file,encoding="latin-1")
-        p_file.close()
+        with open(os.path.join(lexicon_path,"Emotion-Lexicon-Dictionary_py3.pkl"),"rb") as p_file:
+            self.emo_dic = pickle.load(p_file,encoding="latin-1")
         
         #Load the subjective lexicon dictionary
-        p_file = open(os.path.join(lexicon_path,"subjective_lexicon_dic_py3.pkl"),"rb")
-        self.subj_dic = pickle.load(p_file,encoding="latin-1")
-        p_file.close()
+        with open(os.path.join(lexicon_path,"subjective_lexicon_dic_py3.pkl"),"rb") as p_file:
+            self.subj_dic = pickle.load(p_file,encoding="latin-1")
         
         stemmer = nltk.stem.porter.PorterStemmer()
         remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
@@ -552,14 +397,12 @@ class FeatureExtractor():
         
         self.vectorizer = TfidfVectorizer(tokenizer=normalize_cosine, stop_words='english')
 
-
         self.agg_feat_dict = {'Strong-subjective':['strong-negative','strong-positive'],
                          'Weak-subjective':['weak-negative','weak-positive']
                          }
         
-        p_file = open(os.path.join(feature_extract_path,"feature_order.pkl"),"rb")
-        self.feat_order = pickle.load(p_file)
-        p_file.close()
+        with open(os.path.join(feature_extract_path,"feature_order.pkl"),"rb") as p_file:
+            self.feat_order = pickle.load(p_file)
         
 
     def default_dictionary_filename(self):
@@ -639,7 +482,7 @@ class FeatureExtractor():
                     
                     scores.update(liwc_word_scores)
 
-                if token in Dictionary.sentence_punctuation and not sentence_terminated:
+                if token in self._dictionary.sentence_punctuation and not sentence_terminated:
                     scores['Sentences']+=1
                     sentence_terminated = True
 
@@ -650,7 +493,7 @@ class FeatureExtractor():
         scores['Words Per Sentence'] = scores['Word Count']/scores['Sentences'] if scores['Sentences'] > 0 else 0
 
         if not raw_counts:
-            scores = normalize_scores(scores)
+            scores = self.normalize_scores(scores)
 
         return scores, word_scores
         
@@ -790,7 +633,7 @@ class FeatureExtractor():
                             if next_pos == "verb":
                                 feats["please_verb"] += 1
         
-        liwc_feats = score_text(text,self._dictionary)
+        liwc_feats = self.score_text(text,self._dictionary)
         for feat in liwc_feats:
             if feat in feats:
                 feats[feat] = liwc_feats[feat]
@@ -1015,6 +858,74 @@ class FeatureExtractor():
     def run_explain(self, text):
         feats, feats_exaplantion = self.get_feats_explain(text)
         return self.order_feats(feats), feats_exaplantion
+    
+    
+    def score_text(self, text, _dictionary,raw_counts=False, scores=None, unique_words=None):
+        """Returns a sparse counter object of word frequencies or counts if raw_counts is specified
+            @param scores: If you want to keep a running total, Scores should be
+                a Counter of previous counts and raw_counts should be set to True!
+            @param unique_words: Again, will be created if None. Should be a set().
+                If used, you'll probably want to override the scores['Unique Words'] category.
+        """
+        assert _dictionary is not None, 'Dictionary not loaded, you need to load a .dic file, perhaps from LIWC...'
+        if scores is None: scores = Counter()
+        if unique_words is None: unique_words = set()
+        _liwc_tokenizer = re.compile(r'(\d[^a-z\(\)]*|[a-z](?:[\'\.]?[a-z])*|(?<=[a-z])[^a-z0-9\s\(\)]+|[\(\)][^a-z]*)',re.UNICODE|re.IGNORECASE)
+        
+        sentence_terminated = True
+        for line in text.strip().split('\n'):
+            all_tokens = _liwc_tokenizer.findall(line.strip().lower())
+            if not all_tokens:
+                continue
+            for i in range(len(all_tokens)):
+                token = all_tokens[i]
+                if len(token)==0: continue
+    
+                if token[0].isdigit(): #Numbers
+                    scores.update(_dictionary.score_word(token))
+                    sentence_terminated=False
+                elif token[0].isalpha(): #Words
+                    unique_words.add(token)
+                    previous_token = all_tokens[i-1] if i>0 else ''
+                    next_token = all_tokens[i+1] if i<len(all_tokens)-1 else ''
+                    scores.update(_dictionary.score_word(token, previous_token, next_token))
+                    sentence_terminated=False
+                else: #Punctuation and stuff
+                    scores.update(_dictionary.score_word(token))
+    
+                if token in Dictionary.sentence_punctuation and not sentence_terminated:
+                    scores['Sentences']+=1
+                    sentence_terminated = True
+    
+        if not sentence_terminated:
+            scores['Sentences'] += 1
+    
+        scores['Unique Words'] = len(unique_words)
+        scores['Words Per Sentence'] = scores['Word Count']/scores['Sentences'] if scores['Sentences'] > 0 else 0
+    
+        if not raw_counts:
+            scores = self.normalize_scores(scores)
+    
+        return scores
+    
+    def score_file(self, filename, raw_counts=False, scores=None, unique_words=None):
+        return self.score_text(open(filename).read(), raw_counts=raw_counts, scores=scores, unique_words=unique_words)
+    
+    def normalize_scores(self, scores, bound_scores=True):
+        """@summary: Converts counts to percentages"""
+        new_scores = Counter()
+        for category, score in list(scores.items()):
+            if category not in {'Word Count', 'Sentences', 'Words Per Sentence', 'Newlines'}:
+                if scores['Word Count'] > 0:
+                    score = 100.0*score/scores['Word Count']
+                elif score > 0:
+                    score = 100.0
+                else:
+                    score = 0.0
+                if bound_scores:  # Since certain categories can exceed word count
+                    score = min(100.0, max(0.0, score))  # Bounds it to [0,100]
+            new_scores[category] = score
+        return new_scores
 
 if __name__ == "__main__":
     FE_ = FeatureExtractor()
