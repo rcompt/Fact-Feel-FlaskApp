@@ -11,6 +11,7 @@ import pickle
 import re
 import os
 import sys
+import json
 import string
 from collections import Counter, defaultdict
 
@@ -307,64 +308,6 @@ class Dictionary():
                     self._category_lookup[LIWC2007_number]=self._translate_category_name(LIWC2007_short)
 
 
-feat_list_model_order = None
-with open(os.path.join(feature_extract_path, "feature_order.pkl"),"rb") as f_p:
-    feat_list_model_order = pickle.load(f_p)
-
-POS = None
-with open(os.path.join(feature_extract_path,"POS_dict.pkl"),"rb") as f_p:
-    POS = pickle.load(f_p)
-
-
-punct_feats = None
-with open(os.path.join(feature_extract_path,"punct_feats.pkl"),"rb") as f_p:
-    punct_feats = pickle.load(f_p)
-
-
-strong_pos_adjectives = ["incredible", "wellwritten", "great", "excellent",
-                         "successful", "outstanding", "impressive", "best", "highest",
-                         "outstanding", "featured", "greatest", "awesome",
-                         "fantastic", "nice", "beautiful", "good"]   
-
-cause_verbs = ["make", "have", "get", "let", "help", "collaborate", "advise",
-               "advocate", "anticipate", "ask", "command", "expect",
-               "desire", "demand", "insist", "hope", "necessitate", "need",
-               "postulate","propose", "recommend", "request", "require",
-               "suggest", "urge", "want", "wish"]  
-
-you_mod = ["you can", "you could", "you shall", "you may", "you might", 
-           "you must", "you should", "you will", "you would",
-           "you'd", "can you", "could you", "shall you", "may you", 
-           "might you", "must you", "should you", "will you", "would you"]
-
-negative_jargon = ["spam","revert","reverted", "block", "blocked",
-                   "vandalism","vandalise","vandalised", "vandalized",
-                   "vandalize", "violate", "violated", "nonfree", "copyright",
-                   "remove", "disputed", "dispute", "noneutral", "fair use"] 
-
-smile = ["smile", "smiles", "smiling", "balloon", "balloons"]  
-
-greetings = ["hi", "hey", "ha", "hello" , "cheers", 
-             "regards", "new year", "merry christmas", 
-             "see you", "good day", "nice day"]
-
-congrats = ["congrats", "congratulation", "congratulations"]
-
-acknowledge = ["thank you for","thanks for"]
-
-#Parts of speech labels
-pos_tags = ["CC","CD","DT","EX","FW","IN","JJ","JJR","JJS","LS","MD","NN","NNS","NNP","NNPS","PDT","POS","PRP","PRP$","RB","RBR","RBS","RP","SYM","TO","UH","VB","VBD","VBG","VBN","VBP","VBZ","WDT","WP","WP$","WRB"]
-#Emotion lexicon labels
-emo_cats = ['anticipation_emo', 'joy_emo', 'negative_emo', 'sadness_emo', 'disgust_emo', 'positive_emo', 'anger_emo', 'surprise_emo', 'fear_emo', 'trust_emo']
- 
-subj_cats = ["weak-negative","strong-negative","weak-positive","strong-positive"]
-
-
-_liwc_categories = None
-with open(os.path.join(feature_extract_path,"liwc_categories.pkl"),"rb") as f_p:
-    _liwc_categories = pickle.load(f_p)
-
-
 class FeatureExtractor():
     
     def __init__(self):
@@ -385,6 +328,20 @@ class FeatureExtractor():
         with open(os.path.join(lexicon_path,"subjective_lexicon_dic_py3.pkl"),"rb") as p_file:
             self.subj_dic = pickle.load(p_file,encoding="latin-1")
         
+        #Load the Parts of Speech dictionary
+        self.POS = None
+        with open(os.path.join(feature_extract_path,"POS_dict.pkl"),"rb") as f_p:
+            self.POS = pickle.load(f_p)
+            
+
+        self.punct_feats = None
+        with open(os.path.join(feature_extract_path,"punct_feats.pkl"),"rb") as f_p:
+            self.punct_feats = pickle.load(f_p)
+        
+        self._liwc_categories = None
+        with open(os.path.join(feature_extract_path,"liwc_categories.pkl"),"rb") as f_p:
+            self._liwc_categories = pickle.load(f_p)
+        
         stemmer = nltk.stem.porter.PorterStemmer()
         remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
         
@@ -400,6 +357,11 @@ class FeatureExtractor():
         self.agg_feat_dict = {'Strong-subjective':['strong-negative','strong-positive'],
                          'Weak-subjective':['weak-negative','weak-positive']
                          }
+        
+        with open(os.path.join(feature_extract_path,"feature_store.json"),"rb") as p_file:
+            feature_store = json.load(p_file)
+            for key in feature_store:
+                setattr(self, key, feature_store[key])
         
         with open(os.path.join(feature_extract_path,"feature_order.pkl"),"rb") as p_file:
             self.feat_order = pickle.load(p_file)
@@ -500,7 +462,7 @@ class FeatureExtractor():
     def get_feats(self,text):
         
         feats = {}
-        for elem in subj_cats:
+        for elem in self.subj_cats:
             feats[elem] = 0.0   
         feats["strong_pos_adj"] = 0.0
         feats["acknowledge"] = 0.0    
@@ -513,11 +475,11 @@ class FeatureExtractor():
         feats["greetings"] = 0.0
         feats["congrats"] = 0.0
         feats["welcome"] = 0.0    
-        for feat in _liwc_categories:
+        for feat in self._liwc_categories:
             feats[feat] = 0.0
-        for feat in pos_tags:
+        for feat in self.pos_tags:
             feats[feat] = 0.0
-        for feat in emo_cats:
+        for feat in self.emo_cats:
             feats[feat] = 0.0
         
     		#Use pattern.tag to get POS tags
@@ -527,7 +489,7 @@ class FeatureExtractor():
     		#Dictionary used for hold the counts for each POS tag
         tag_dic = {}
     		#Create Dictionary element for each possible tag
-        for t in pos_tags:
+        for t in self.pos_tags:
             tag_dic[t] = 0.0
     		#Count number of tags found within the text sample
         for t in ptags:
@@ -535,7 +497,7 @@ class FeatureExtractor():
                 tag_dic[t] += 1
     		#Append each tag frequency to the row
     		#If tag was not present append 0
-        for t in pos_tags:
+        for t in self.pos_tags:
             if len(ptags) == 0:
                 feats[t] = 0.0
             else:
@@ -550,7 +512,7 @@ class FeatureExtractor():
     		#Dictionary used for hold the counts for each emotional category
         text_cats = {}
     		#Initialize all categories to 0 count
-        for cat in emo_cats:
+        for cat in self.emo_cats:
             text_cats[cat] = 0.0
         
         for key in self.emo_dic[list(self.emo_dic.keys())[0]]:
@@ -572,31 +534,31 @@ class FeatureExtractor():
             text_cats[cat] = text_cats[cat]/len(words)
             feats[cat] = text_cats[cat] 
         #Get Strong positive adjectives feature
-        for word_strong in strong_pos_adjectives:
+        for word_strong in self.strong_pos_adjectives:
             feats["strong_pos_adj"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_strong), text.lower()))
         #Get Causative/subjunctive verbs
-        for word_cause in cause_verbs:
+        for word_cause in self.cause_verbs:
             feats["cause_verbs"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_cause), text.lower()))
         #Get YouMod features
-        for word_you in you_mod:
+        for word_you in self.you_mod:
             feats["you_mod"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_you), text.lower()))
         #Get Negative Jargon features
-        for word_neg in negative_jargon:
+        for word_neg in self.negative_jargon:
             feats["negative_jargon"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_neg), text.lower()))
         #Get Smiley features
-        for word_smile in smile:
+        for word_smile in self.smile:
             feats["smiley"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_smile), text.lower()))
         feats["smiley"] += self.find_smilies(text)
         #Get Greetings features
-        for word_greet in greetings:
+        for word_greet in self.greetings:
             feats["greetings"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_greet), text.lower()))
         #Get congrats features
-        for word_congrats in congrats:
+        for word_congrats in self.congrats:
             feats["congrats"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_congrats), text.lower()))
         #Get welcome features
         feats["welcome"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("welcome"), text.lower()))
         #Get Acknowledge features
-        for word_ack in acknowledge:
+        for word_ack in self.acknowledge:
             feats["acknowledge"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_ack), text.lower()))
         #Get if-you features
         feats["if-you"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("if you"), text.lower()))
@@ -609,11 +571,11 @@ class FeatureExtractor():
                 pos = ptags[index]
                 #Get Subjectivity Features 
                 if w.lower() in self.subj_dic:
-                    pos_temp = POS.get(pos,"anypos")
+                    pos_temp = self.POS.get(pos,"anypos")
                     if pos_temp in self.subj_dic[w.lower()]:
                         subj = self.subj_dic[w.lower()][pos_temp]["type"].replace("subj","")
                         polarity = subj + "-" + self.subj_dic[w.lower()][pos_temp]['priorpolarity']
-                        if polarity in subj_cats:
+                        if polarity in self.subj_cats:
                             feats[polarity] += 1
                 #Get Please features
                 if w.lower() == "please":
@@ -629,7 +591,7 @@ class FeatureExtractor():
                             i += 1
                         if flag:
                             next_parts = ptags[index+1]
-                            next_pos = pos_temp = POS.get(next_parts,"anypos")
+                            next_pos = pos_temp = self.POS.get(next_parts,"anypos")
                             if next_pos == "verb":
                                 feats["please_verb"] += 1
         
@@ -643,9 +605,9 @@ class FeatureExtractor():
                     feats[feat] = 0.0
                 else:
                     feats[feat] = (feats[feat] / liwc_feats['Word Count'])*100.0
-        for feat in punct_feats:
+        for feat in self.punct_feats:
             count = 0
-            for char in punct_feats[feat]:
+            for char in self.punct_feats[feat]:
                 count += text.count(char)
             feats[feat] = count
         return feats
@@ -673,7 +635,7 @@ class FeatureExtractor():
         
         feats_explain_dict = {}
         
-        for elem in subj_cats:
+        for elem in self.subj_cats:
             feats[elem] = 0.0   
         feats["strong_pos_adj"] = 0.0
         feats["acknowledge"] = 0.0    
@@ -686,11 +648,11 @@ class FeatureExtractor():
         feats["greetings"] = 0.0
         feats["congrats"] = 0.0
         feats["welcome"] = 0.0    
-        for feat in _liwc_categories:
+        for feat in self._liwc_categories:
             feats[feat] = 0.0
-        for feat in pos_tags:
+        for feat in self.pos_tags:
             feats[feat] = 0.0
-        for feat in emo_cats:
+        for feat in self.emo_cats:
             feats[feat] = 0.0
         
     		#Use pattern.tag to get POS tags
@@ -700,7 +662,7 @@ class FeatureExtractor():
     		#Dictionary used for hold the counts for each POS tag
         tag_dic = {}
     		#Create Dictionary element for each possible tag
-        for t in pos_tags:
+        for t in self.pos_tags:
             tag_dic[t] = 0.0
     		#Count number of tags found within the text sample
         for t in ptags:
@@ -717,7 +679,7 @@ class FeatureExtractor():
                 feats_explain_dict[w] = set()
             feats_explain_dict[w].add(t)
             
-        for t in pos_tags:
+        for t in self.pos_tags:
             if len(ptags) == 0:
                 feats[t] = 0.0
             else:
@@ -731,7 +693,7 @@ class FeatureExtractor():
     		#Dictionary used for hold the counts for each emotional category
         text_cats = {}
     		#Initialize all categories to 0 count
-        for cat in emo_cats:
+        for cat in self.emo_cats:
             text_cats[cat] = 0.0
         
         for key in self.emo_dic[list(self.emo_dic.keys())[0]]:
@@ -760,31 +722,31 @@ class FeatureExtractor():
             text_cats[cat] = text_cats[cat]/len(words)
             feats[cat] = text_cats[cat] 
         #Get Strong positive adjectives feature
-        for word_strong in strong_pos_adjectives:
+        for word_strong in self.strong_pos_adjectives:
             feats["strong_pos_adj"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_strong), text.lower()))
         #Get Causative/subjunctive verbs
-        for word_cause in cause_verbs:
+        for word_cause in self.cause_verbs:
             feats["cause_verbs"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_cause), text.lower()))
         #Get YouMod features
-        for word_you in you_mod:
+        for word_you in self.you_mod:
             feats["you_mod"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_you), text.lower()))
         #Get Negative Jargon features
-        for word_neg in negative_jargon:
+        for word_neg in self.negative_jargon:
             feats["negative_jargon"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_neg), text.lower()))
         #Get Smiley features
-        for word_smile in smile:
+        for word_smile in self.smile:
             feats["smiley"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_smile), text.lower()))
         feats["smiley"] += self.find_smilies(text)
         #Get Greetings features
-        for word_greet in greetings:
+        for word_greet in self.greetings:
             feats["greetings"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_greet), text.lower()))
         #Get congrats features
-        for word_congrats in congrats:
+        for word_congrats in self.congrats:
             feats["congrats"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_congrats), text.lower()))
         #Get welcome features
         feats["welcome"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("welcome"), text.lower()))
         #Get Acknowledge features
-        for word_ack in acknowledge:
+        for word_ack in self.acknowledge:
             feats["acknowledge"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(word_ack), text.lower()))
         #Get if-you features
         feats["if-you"] += sum(1 for _ in re.finditer(r'\b%s\b' % re.escape("if you"), text.lower()))
@@ -798,11 +760,11 @@ class FeatureExtractor():
                 #Get Subjectivity Features 
                 if w.lower() in self.subj_dic:
                     w =  w.lower()
-                    pos_temp = POS.get(pos,"anypos")
+                    pos_temp = self.POS.get(pos,"anypos")
                     if pos_temp in self.subj_dic[w]:
                         subj = self.subj_dic[w][pos_temp]["type"].replace("subj","")
                         polarity = subj + "-" + self.subj_dic[w][pos_temp]['priorpolarity']
-                        if polarity in subj_cats:
+                        if polarity in self.subj_cats:
                             feats[polarity] += 1
                             
                             # Check if word is in explain_dict
@@ -827,7 +789,7 @@ class FeatureExtractor():
                             i += 1
                         if flag:
                             next_parts = ptags[index+1]
-                            next_pos = pos_temp = POS.get(next_parts,"anypos")
+                            next_pos = pos_temp = self.POS.get(next_parts,"anypos")
                             if next_pos == "verb":
                                 feats["please_verb"] += 1
         
@@ -847,9 +809,9 @@ class FeatureExtractor():
                     feats[feat] = 0.0
                 else:
                     feats[feat] = (feats[feat] / liwc_feats['Word Count'])*100.0
-        for feat in punct_feats:
+        for feat in self.punct_feats:
             count = 0
-            for char in punct_feats[feat]:
+            for char in self.punct_feats[feat]:
                 count += text.count(char)
             feats[feat] = count
         return feats, feats_explain_dict
