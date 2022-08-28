@@ -4,7 +4,7 @@ import factfeel_client as client
 import json
 import threading
 import queue
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib import pyplot as plt
 import sys
 
@@ -30,13 +30,16 @@ class FactFeelUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.parse_config_file()
-        self.init_window()
+        self.init_main_window()
         self.new_data_queue = queue.Queue()
         self.api_thread_stop_signal = threading.Event()
-        self.run_client_cmd()
+        self.start_factfeel_thread()
 
-    # Parse user-specific configuration needed for the API
     def parse_config_file(self):
+        """
+        Parse user-specific configuration needed for the API
+        :return:
+        """
         with open('config.json') as json_file:
             data = json.load(json_file)
             print(f"Config data {data}")
@@ -53,30 +56,45 @@ class FactFeelUI(tk.Tk):
             self.validate_colors(colors)
             self.colors = data["colors"]
 
-    # Validates the IP address by attempting to convert it to 32-bit packed binary format
-    # Will raise exception if ip address is invalid
     @staticmethod
     def validate_ip(ip):
+        """
+        Validates the IP address by attempting to convert it to 32-bit packed binary format
+        Will raise exception if ip address is invalid
+        :param ip:
+        :return:
+        """
         socket.inet_aton(ip)
 
-    # Validates that the light list is 1. a list and 2. contains only strings
-    # Will raise exception if light list is invalid
     @staticmethod
     def validate_light_list(lights):
+        """
+        Validates that the light list is 1. a list and 2. contains only strings
+        Will raise exception if light list is invalid
+        :param lights:
+        :return:
+        """
         if not all(isinstance(item, str) for item in lights):
             raise Exception("Light list is not in correct format. Must be list of string")
 
-    # Validates that the color array is 1. 2-dimentional and 2. contains only floats
-    # Will raise exception if color list is invalid
     @staticmethod
     def validate_colors(colors):
+        """
+        Validates that the color array is 1. 2-dimentional and 2. contains only floats
+        Will raise exception if color list is invalid
+        :param colors:
+        :return:
+        """
         if not len(colors) == 2:
             raise Exception("Colors array is not in correct format. Must be two-dimensional")
         if not all(all(isinstance(item, float) for item in items) for items in colors):
             raise Exception("Colors array must only contain floats")
 
-    # Creation of init_window
-    def init_window(self):
+    def init_main_window(self):
+        """
+        Creation of main UI View
+        :return:
+        """
         self.title('Fact/Feel Engineering Tool')
         self.geometry(self.window_size)
 
@@ -118,6 +136,10 @@ class FactFeelUI(tk.Tk):
         self.prediction_tracker_canvas.get_tk_widget().grid(row=0, rowspan=2, column=1, sticky='ew')
 
     def update_clock(self):
+        """
+        Updates the GUI thread when the fact/feel thread updates
+        :return:
+        """
         if not self.api_thread.is_alive() and not self.new_data_queue.empty():
             return
 
@@ -134,18 +156,31 @@ class FactFeelUI(tk.Tk):
 
         self.after(10000, self.update_clock)
 
-    def update_text(self, text):
+    def append_textbox(self, text):
+        """
+        Appends the text box contents in the GUI with incoming data
+        :param text: the new text
+        :return:
+        """
         if isinstance(text, str):
             self.speech_to_text_widget.insert(tk.END, text + '\n')
 
     def runtime_update_app_config_cmd(self):
+        """
+        Stops the API thread in order to update initial configuration
+        :return:
+        """
         # Set the event that will cause the thread to stop
         self.api_thread_stop_signal.set()
         self.api_thread.join()
         self.setup_runtime_config_popup()
-        self.run_client_cmd()
 
     def setup_runtime_config_popup(self):
+        """
+        Builds the config popup that allows for changing the initial configuration at runtime.
+        Displays over the main view until the changes have been confirmed
+        :return:
+        """
         config_popup = tk.Toplevel(self)
         config_popup.geometry(self.window_size)
         config_popup.title("Configure Fact/Feel")
@@ -171,15 +206,26 @@ class FactFeelUI(tk.Tk):
         tk.Button(config_popup, text='Save').grid(row=3, column=0, sticky='news')
         tk.Button(config_popup, text='Cancel').grid(row=3, column=1, sticky='news')
 
+    def save_config_cmd(self):
+
+
     def update_ipaddress_cmd(self, new_ipaddress):
         self.light_ipaddress = new_ipaddress
 
     def clear_text_cmd(self):
+        """
+        Clears all text from the GUI textbox
+        :return:
+        """
         self.speech_to_text_widget.delete("1.0", tk.END)
 
-    def run_client_cmd(self):
+    def start_factfeel_thread(self):
+        """
+        This function kicks off the API thread from the main GUI thread
+        :return:
+        """
         self.api_thread_stop_signal.clear()
-        self.api_thread = threading.Thread(target=self.run_client)
+        self.api_thread = threading.Thread(target=self.run_factfeel)
         self.api_thread.daemon = True
 
         # start timer
@@ -188,7 +234,11 @@ class FactFeelUI(tk.Tk):
 
     @staticmethod
     def plot(fact_feel_text_data):
-
+        """
+        Adds a new data point to the current chart
+        :param fact_feel_text_data:
+        :return:
+        """
         fig, ax = plt.subplots()
 
         if fact_feel_text_data is not None:
@@ -204,7 +254,11 @@ class FactFeelUI(tk.Tk):
 
         return fig
 
-    def run_client(self):
+    def run_factfeel(self):
+        """
+        The fact/feel thread. Spun up from the main GUI thread
+        :return:
+        """
         light_orchestrator = client.LightOrchestrator(
             ip=self.ip,
             lights=self.lights,
@@ -219,7 +273,7 @@ class FactFeelUI(tk.Tk):
             print(f"Thread is_alive() is: ", self.api_thread.is_alive())
             text = speech_to_text.listen_transcribe()
 
-            self.update_text(text)
+            self.append_textbox(text)
 
             # data to be sent to api
             if text != 0:
