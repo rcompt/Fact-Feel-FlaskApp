@@ -8,9 +8,12 @@ from playsound import playsound
 import numpy as np
 from matplotlib import pyplot as plt
 
+import threading
+import queue
 import requests
 import json
 import logging
+import time
 
 log_config = {
         "filename" : "FactFeelApi.log",
@@ -228,6 +231,7 @@ class SpeechToText:
         if self._debug:
             print(f"Using device index {self._device} : {self.devices[self._device]}")
         
+        self._audio_queue = queue.Queue()
         self._check_device()
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
@@ -261,6 +265,29 @@ class SpeechToText:
         else:
             raise RuntimeError("_listen() was called before calling initializing the recognizer! Please call initialize() before calling _listen()!")
     
+    
+    def _stream_listen(self, duration):
+        '''
+        listen: Record audio for the given 'duration' in seconds
+        Param
+            duration: int
+        return
+            audio: <Unknown!!!>
+        '''
+        
+        if hasattr(self, "recognizer"):
+
+            while self.audio_thread.is_alive():
+                with sr.Microphone(device_index = self._device) as source:
+                    #r.adjust_for_ambient_noise(source)
+                    print("Stream_Listen: Say Something")
+                    audio = self.recognizer.record(source, duration = duration)
+                    print("Stream_Listen: got it")
+                    self._audio_queue.put(audio)
+        
+        else:
+            raise RuntimeError("_listen() was called before calling initializing the recognizer! Please call initialize() before calling _listen()!")
+    
     def _voice(self, audio):
         '''
         voice: Given an audio <unknown type>, send to Google api for speech to text response
@@ -282,6 +309,37 @@ class SpeechToText:
             print(f"Could not request results from Google: {e}")
             return 0
     
+    def stream_main_loop(self):
+        try:      
+            if not self.audio_thread.is_alive() and not self._audio_queue.empty():
+                return
+        
+            while not self._audio_queue.empty():
+                new_audio_data = self._audio_queue.get()
+                text = self._voice(new_audio_data)
+                #print(f"Stream_Listen: {text}")
+            
+            time.sleep(15)
+            self.stream_main_loop()
+            
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt, stopping stream")
+            self.audio_thread.kill()
+    
+    def stream_listen_transcribe(self, duration = 15):
+        try:
+            
+            self.audio_thread = threading.Thread(target=self._stream_listen, args=[duration])
+            self.audio_thread.daemon = True
+            self.audio_thread.start()
+            
+            time.sleep(duration)
+            self.stream_main_loop()
+                              
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt, stopping stream")
+            self.audio_thread.stop()
+            
     def listen_transcribe(self, duration = 15):
         return self._voice(self._listen(duration))
     
@@ -414,19 +472,21 @@ if __name__ == "__main__":
     listener = SpeechToText(init = True, debug = True)
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/explain")
     
-    while(1):
+    listener.stream_listen_transcribe()
+    
+    # while(1):
         
-        text = listener.listen_transcribe()
-                # data to be sent to api
-        if text != 0:
+    #     text = listener.listen_transcribe()
+    #             # data to be sent to api
+    #     if text != 0:
             
-            prediction, _ = fact_feel.fact_feel_explain(text)
-            print(f"Recieved prediction of {prediction}")
+    #         prediction, _ = fact_feel.fact_feel_explain(text)
+    #         print(f"Recieved prediction of {prediction}")
             
-            light_orchestrator.fact_feel_modify_lights(prediction)
+    #         light_orchestrator.fact_feel_modify_lights(prediction)
             
-        else:
+    #     else:
             
-            print("Skipping due to issues with response from Google")
+    #         print("Skipping due to issues with response from Google")
             
-        seq += 1
+    #     seq += 1
