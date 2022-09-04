@@ -1,5 +1,8 @@
 import socket
 import tkinter as tk
+
+import phue
+
 import factfeel_client as client
 import json
 import threading
@@ -14,12 +17,14 @@ class FactFeelUI(tk.Tk):
     window_size = '800x480'
 
     # Globals
-    speech_to_text_widget = None
+    config_popup = None
+    speech_to_text_textbox = None
+    ip_address_textbox = None
     prediction_tracker_canvas = None
     new_data_queue = []
     api_thread = None
     api_thread_stop_signal = None
-    light_ipaddress = None
+    light_ip_address = None
     gettrace = None
 
     # Config
@@ -29,13 +34,13 @@ class FactFeelUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.parse_config_file()
+        self.read_config_file()
         self.init_main_window()
         self.new_data_queue = queue.Queue()
         self.api_thread_stop_signal = threading.Event()
         self.start_factfeel_thread()
 
-    def parse_config_file(self):
+    def read_config_file(self):
         """
         Parse user-specific configuration needed for the API
         :return:
@@ -45,19 +50,32 @@ class FactFeelUI(tk.Tk):
             print(f"Config data {data}")
 
             ip = data["ip"]
-            self.validate_ip(ip)
+            self.validate_config_ip_address(ip)
             self.ip = ip
 
             lights = data["lights"]
-            self.validate_light_list(lights)
+            self.validate_config_light_list(lights)
             self.lights = data["lights"]
 
             colors = data["colors"]
-            self.validate_colors(colors)
+            self.validate_config_colors(colors)
             self.colors = data["colors"]
 
+    def write_config_file(self):
+        """
+
+        :return:
+        """
+        with open('config.json') as json_file:
+            data = json.load(json_file)
+
+        data['ip'] = self.light_ip_address
+
+        with open('config.json', 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+
     @staticmethod
-    def validate_ip(ip):
+    def validate_config_ip_address(ip):
         """
         Validates the IP address by attempting to convert it to 32-bit packed binary format
         Will raise exception if ip address is invalid
@@ -67,7 +85,7 @@ class FactFeelUI(tk.Tk):
         socket.inet_aton(ip)
 
     @staticmethod
-    def validate_light_list(lights):
+    def validate_config_light_list(lights):
         """
         Validates that the light list is 1. a list and 2. contains only strings
         Will raise exception if light list is invalid
@@ -78,7 +96,7 @@ class FactFeelUI(tk.Tk):
             raise Exception("Light list is not in correct format. Must be list of string")
 
     @staticmethod
-    def validate_colors(colors):
+    def validate_config_colors(colors):
         """
         Validates that the color array is 1. 2-dimentional and 2. contains only floats
         Will raise exception if color list is invalid
@@ -123,8 +141,8 @@ class FactFeelUI(tk.Tk):
         self.rowconfigure(3, weight=1)
 
         # Set up main speech-to-text textbox. This displays what the speech recognition converts to text
-        self.speech_to_text_widget = tk.Text(self, wrap="word", borderwidth=3)
-        self.speech_to_text_widget.grid(row=0, column=0, sticky='nsew')
+        self.speech_to_text_textbox = tk.Text(self, wrap="word", borderwidth=3)
+        self.speech_to_text_textbox.grid(row=0, column=0, sticky='nsew')
 
         clear_text_button = tk.Button(self, text="Clear Text", command=self.clear_text_cmd)
         clear_text_button.grid(row=1, column=0, sticky='nsew')
@@ -135,7 +153,7 @@ class FactFeelUI(tk.Tk):
         self.prediction_tracker_canvas.draw()
         self.prediction_tracker_canvas.get_tk_widget().grid(row=0, rowspan=2, column=1, sticky='ew')
 
-    def update_clock(self):
+    def poll_api_thread(self):
         """
         Updates the GUI thread when the fact/feel thread updates
         :return:
@@ -154,7 +172,7 @@ class FactFeelUI(tk.Tk):
             self.prediction_tracker_canvas.draw()
             self.prediction_tracker_canvas.get_tk_widget().grid(row=0, rowspan=2, column=1, sticky='ew')
 
-        self.after(10000, self.update_clock)
+        self.after(10000, self.poll_api_thread)
 
     def append_textbox(self, text):
         """
@@ -181,36 +199,45 @@ class FactFeelUI(tk.Tk):
         Displays over the main view until the changes have been confirmed
         :return:
         """
-        config_popup = tk.Toplevel(self)
-        config_popup.geometry(self.window_size)
-        config_popup.title("Configure Fact/Feel")
+        self.config_popup = tk.Toplevel(self)
+        self.config_popup.geometry(self.window_size)
+        self.config_popup.title("Configure Fact/Feel")
 
         # Don't fullscreen popup if running in debug
         if self.gettrace is None:
-            config_popup.attributes("-fullscreen", True)
-            config_popup.resizable(width=True, height=True)
+            self.config_popup.attributes("-fullscreen", True)
+            self.config_popup.resizable(width=True, height=True)
         elif self.gettrace():
-            config_popup.attributes("-fullscreen", False)
-            config_popup.resizable(width=False, height=False)
+            self.config_popup.attributes("-fullscreen", False)
+            self.config_popup.resizable(width=False, height=False)
 
-        config_popup.columnconfigure(0, weight=1)
-        config_popup.columnconfigure(1, weight=1)
-        config_popup.columnconfigure(2, weight=1)
-        config_popup.columnconfigure(3, weight=1)
-        config_popup.rowconfigure(0, weight=1)
-        config_popup.rowconfigure(1, weight=1)
+        self.config_popup.columnconfigure(0, weight=1)
+        self.config_popup.columnconfigure(1, weight=1)
+        self.config_popup.columnconfigure(2, weight=1)
+        self.config_popup.columnconfigure(3, weight=1)
+        self.config_popup.rowconfigure(0, weight=1)
+        self.config_popup.rowconfigure(1, weight=1)
 
-        tk.Label(config_popup, text='IP Address:').grid(row=0, column=0, sticky='news')
-        tk.Text(config_popup).grid(row=0, column=1, sticky='news')
+        tk.Label(self.config_popup, text='IP Address:').grid(row=0, column=0, sticky='news')
+        self.ip_address_textbox = tk.Text(self.config_popup)
+        self.ip_address_textbox.grid(row=0, column=1, sticky='ew')
+        self.ip_address_textbox.insert(tk.END, chars=self.light_ip_address)
 
-        tk.Button(config_popup, text='Save').grid(row=3, column=0, sticky='news')
-        tk.Button(config_popup, text='Cancel').grid(row=3, column=1, sticky='news')
+        tk.Button(self.config_popup, text='Save', command=self.save_config_cmd).grid(row=3, column=0, sticky='news')
+        tk.Button(self.config_popup, text='Cancel').grid(row=3, column=1, sticky='news')
 
     def save_config_cmd(self):
+        """
+        Captures data entry from the config popup and writes the config file with it
+        :return:
+        """
+        new_ip_address = self.ip_address_textbox.get("1.0", tk.END).strip()
+        self.validate_config_ip_address(new_ip_address)
+        self.light_ip_address = new_ip_address
 
-
-    def update_ipaddress_cmd(self, new_ipaddress):
-        self.light_ipaddress = new_ipaddress
+        self.config_popup.destroy()
+        self.write_config_file()
+        self.start_factfeel_thread()
 
     def clear_text_cmd(self):
         """
@@ -229,7 +256,7 @@ class FactFeelUI(tk.Tk):
         self.api_thread.daemon = True
 
         # start timer
-        self.after(1000, self.update_clock)
+        self.after(1000, self.poll_api_thread)
         self.api_thread.start()
 
     @staticmethod
@@ -259,11 +286,16 @@ class FactFeelUI(tk.Tk):
         The fact/feel thread. Spun up from the main GUI thread
         :return:
         """
-        light_orchestrator = client.LightOrchestrator(
-            ip=self.ip,
-            lights=self.lights,
-            colors=self.colors
-        )
+        try:
+            light_orchestrator = client.LightOrchestrator(
+                ip=self.ip,
+                lights=self.lights,
+                colors=self.colors
+            )
+        except phue.PhueRequestTimeout as prt:
+            print(prt.message)
+            return
+
         speech_to_text = client.SpeechToText(init=True)
         api = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
 
