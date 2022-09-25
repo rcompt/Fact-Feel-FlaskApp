@@ -20,11 +20,13 @@ class FactFeelUI(tk.Tk):
     config_popup = None
     speech_to_text_textbox = None
     ip_address_textbox = None
+    light_list_textbox = None
+    color_list_textbox = None
+
     prediction_tracker_canvas = None
     new_data_queue = []
     api_thread = None
     api_thread_stop_signal = None
-    light_ip_address = None
     gettrace = None
 
     # Config
@@ -69,7 +71,7 @@ class FactFeelUI(tk.Tk):
         with open('config.json') as json_file:
             data = json.load(json_file)
 
-        data['ip'] = self.light_ip_address
+        data['ip'] = self.ip
 
         with open('config.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
@@ -217,23 +219,45 @@ class FactFeelUI(tk.Tk):
         self.config_popup.columnconfigure(3, weight=1)
         self.config_popup.rowconfigure(0, weight=1)
         self.config_popup.rowconfigure(1, weight=1)
+        self.config_popup.rowconfigure(2, weight=1)
 
+        # Setup IP capture
         tk.Label(self.config_popup, text='IP Address:').grid(row=0, column=0, sticky='news')
         self.ip_address_textbox = tk.Text(self.config_popup)
         self.ip_address_textbox.grid(row=0, column=1, sticky='ew')
-        self.ip_address_textbox.insert(tk.END, chars=self.light_ip_address)
+        self.ip_address_textbox.insert(tk.END, self.ip)
 
-        tk.Button(self.config_popup, text='Save', command=self.save_config_cmd).grid(row=3, column=0, sticky='news')
+        # Setup Light list capture
+        tk.Label(self.config_popup, text='Lights:').grid(row=1, column=0, sticky='news')
+        self.light_list_textbox = tk.Text(self.config_popup)
+        self.light_list_textbox.grid(row=1, column=1, sticky='ew')
+        self.light_list_textbox.insert(tk.END, ', '.join(self.lights))
+
+        # Setup Color list capture
+        tk.Label(self.config_popup, text='Colors:').grid(row=2, column=0, sticky='news')
+        self.color_list_textbox = tk.Text(self.config_popup)
+        self.color_list_textbox.grid(row=2, column=1, sticky='ew')
+
+        # TODO store the 2D color list as a string that can be inserted into the textbox
+        self.color_list_textbox.insert(tk.END, )
+
+        tk.Button(self.config_popup, text='Save', command=self.save_new_config_cmd).grid(row=3, column=0, sticky='news')
         tk.Button(self.config_popup, text='Cancel').grid(row=3, column=1, sticky='news')
 
-    def save_config_cmd(self):
+    def save_new_config_cmd(self):
         """
         Captures data entry from the config popup and writes the config file with it
         :return:
         """
         new_ip_address = self.ip_address_textbox.get("1.0", tk.END).strip()
         self.validate_config_ip_address(new_ip_address)
-        self.light_ip_address = new_ip_address
+        self.ip = new_ip_address
+
+        new_light_list = self.light_list_textbox.get("1.0", tk.END).strip().split(',')
+        self.validate_config_light_list(new_light_list)
+        self.lights = new_light_list
+
+        new_color_list
 
         self.config_popup.destroy()
         self.write_config_file()
