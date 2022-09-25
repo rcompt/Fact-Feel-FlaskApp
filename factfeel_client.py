@@ -232,6 +232,7 @@ class SpeechToText:
             print(f"Using device index {self._device} : {self.devices[self._device]}")
         
         self._audio_queue = queue.Queue()
+        self.text_queue = queue.Queue()
         self._check_device()
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
@@ -257,9 +258,9 @@ class SpeechToText:
 
             with sr.Microphone(device_index = self._device) as source:
                 #r.adjust_for_ambient_noise(source)
-                print("Say Something")
+                ## print("Say Something")
                 audio = self.recognizer.record(source, duration = duration)
-                print("got it")
+                ## print("got it")
             return audio
         
         else:
@@ -277,12 +278,12 @@ class SpeechToText:
         
         if hasattr(self, "recognizer"):
 
-            while self.audio_thread.is_alive():
+            while not self.audio_thread_stop_signal.is_set() and self.audio_thread.is_alive():
                 with sr.Microphone(device_index = self._device) as source:
                     #r.adjust_for_ambient_noise(source)
-                    print("Stream_Listen: Say Something")
+                    ## print("Stream_Listen: Say Something")
                     audio = self.recognizer.record(source, duration = duration)
-                    print("Stream_Listen: got it")
+                    ## print("Stream_Listen: got it")
                     self._audio_queue.put(audio)
         
         else:
@@ -299,7 +300,7 @@ class SpeechToText:
         try:
             text = self.recognizer.recognize_google(audio)
             ## call('espeak ' + text, shell = True)
-            print("you said: " + text)
+            ## print("you said: " + text)
             return text
         except sr.UnknownValueError:
             ## call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
@@ -311,24 +312,35 @@ class SpeechToText:
     
     def stream_main_loop(self):
         try:      
-            if not self.audio_thread.is_alive() and not self._audio_queue.empty():
+            if not self.audio_thread.is_alive() and not self.audio_thread_stop_signal.is_set():
                 return
         
             while not self._audio_queue.empty():
                 new_audio_data = self._audio_queue.get()
                 text = self._voice(new_audio_data)
+                self.text_queue.put(text)
                 #print(f"Stream_Listen: {text}")
             
-            time.sleep(15)
+            time.sleep(5)
             self.stream_main_loop()
             
         except KeyboardInterrupt:
             print("Keyboard Interrupt, stopping stream")
-            self.audio_thread.kill()
+            self.stream_stop()
+
+    
+    def stream_stop(self):
+        """
+        Stops the API thread in order to update initial configuration
+        :return:
+        """
+        # Set the event that will cause the thread to stop
+        self.audio_thread_stop_signal.set()
+        self.audio_thread.join()
     
     def stream_listen_transcribe(self, duration = 15):
         try:
-            
+            self.audio_thread_stop_signal = threading.Event()
             self.audio_thread = threading.Thread(target=self._stream_listen, args=[duration])
             self.audio_thread.daemon = True
             self.audio_thread.start()
@@ -338,7 +350,7 @@ class SpeechToText:
                               
         except KeyboardInterrupt:
             print("Keyboard Interrupt, stopping stream")
-            self.audio_thread.stop()
+            self.stream_stop()
             
     def listen_transcribe(self, duration = 15):
         return self._voice(self._listen(duration))
