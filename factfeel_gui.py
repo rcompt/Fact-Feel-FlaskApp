@@ -65,13 +65,15 @@ class FactFeelUI(tk.Tk):
 
     def write_config_file(self):
         """
-
+        Writes configuration data to file
         :return:
         """
         with open('config.json') as json_file:
             data = json.load(json_file)
 
         data['ip'] = self.ip
+        data['lights'] = self.lights
+        data['colors'] = self.colors
 
         with open('config.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
@@ -237,9 +239,12 @@ class FactFeelUI(tk.Tk):
         tk.Label(self.config_popup, text='Colors:').grid(row=2, column=0, sticky='news')
         self.color_list_textbox = tk.Text(self.config_popup)
         self.color_list_textbox.grid(row=2, column=1, sticky='ew')
-
-        # TODO store the 2D color list as a string that can be inserted into the textbox
-        self.color_list_textbox.insert(tk.END, )
+        for i in range(len(self.colors)):
+            for n in range(len(self.colors[i])):
+                self.color_list_textbox.insert(tk.END, str(self.colors[i][n]))
+                if n < len(self.colors[i]) - 1:
+                    self.color_list_textbox.insert(tk.END, ', ')
+            self.color_list_textbox.insert(tk.END, '\n')
 
         tk.Button(self.config_popup, text='Save', command=self.save_new_config_cmd).grid(row=3, column=0, sticky='news')
         tk.Button(self.config_popup, text='Cancel').grid(row=3, column=1, sticky='news')
@@ -257,7 +262,15 @@ class FactFeelUI(tk.Tk):
         self.validate_config_light_list(new_light_list)
         self.lights = new_light_list
 
-        new_color_list
+        new_color_list = []
+        split1 = self.color_list_textbox.get("1.0", tk.END).strip().split('\n')
+        for i in range(len(split1)):
+            split2 = split1[i].strip().split(',')
+            temp_array = []
+            for n in range(len(split2)):
+                temp_array.append(float(split2[n]))
+            new_color_list.append(temp_array)
+        self.colors = new_color_list
 
         self.config_popup.destroy()
         self.write_config_file()
