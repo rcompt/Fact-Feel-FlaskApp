@@ -182,7 +182,7 @@ class FactFeelUI(tk.Tk):
         :return:
         """
         if isinstance(text, str):
-            self.speech_to_text_widget.insert(tk.END, text + '\n')
+            self.speech_to_text_textbox.insert(tk.END, text + '\n')
 
     def runtime_update_app_config_cmd(self):
         """
