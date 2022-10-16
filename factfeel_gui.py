@@ -1,8 +1,5 @@
 import socket
 import tkinter as tk
-
-import phue
-
 import factfeel_client as client
 import json
 import threading
@@ -247,7 +244,7 @@ class FactFeelUI(tk.Tk):
             self.color_list_textbox.insert(tk.END, '\n')
 
         tk.Button(self.config_popup, text='Save', command=self.save_new_config_cmd).grid(row=3, column=0, sticky='news')
-        tk.Button(self.config_popup, text='Cancel').grid(row=3, column=1, sticky='news')
+        tk.Button(self.config_popup, text='Cancel', command=self.new_config_complete_cmd).grid(row=3, column=1, sticky='news')
 
     def save_new_config_cmd(self):
         """
@@ -270,10 +267,14 @@ class FactFeelUI(tk.Tk):
             for n in range(len(split2)):
                 temp_array.append(float(split2[n]))
             new_color_list.append(temp_array)
+        self.validate_config_colors(new_color_list)
         self.colors = new_color_list
 
-        self.config_popup.destroy()
         self.write_config_file()
+        self.new_config_complete_cmd()
+
+    def new_config_complete_cmd(self):
+        self.config_popup.destroy()
         self.start_factfeel_thread()
 
     def clear_text_cmd(self):
@@ -329,7 +330,7 @@ class FactFeelUI(tk.Tk):
                 lights=self.lights,
                 colors=self.colors
             )
-        except phue.PhueRequestTimeout as prt:
+        except client.phue.PhueRequestTimeout as prt:
             print(prt.message)
             return
 

@@ -1,5 +1,5 @@
 # imports
-from phue import Bridge
+import phue
 import speech_recognition as sr
 import pyaudio
 from rgbxy import Converter
@@ -60,7 +60,7 @@ class LightOrchestrator:
         self.ip = ip
         
     def connect_to_bridge(self):
-        self.bridge = Bridge(self.ip)
+        self.bridge = phue.Bridge(self.ip)
         self.bridge.connect()
         
     def set_lights(self, lights):
