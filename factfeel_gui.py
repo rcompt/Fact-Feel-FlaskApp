@@ -19,6 +19,7 @@ class FactFeelUI(tk.Tk):
     ip_address_textbox = None
     light_list_textbox = None
     color_list_textbox = None
+    device_id_textbox = None
 
     prediction_tracker_canvas = None
     new_data_queue = []
@@ -30,6 +31,7 @@ class FactFeelUI(tk.Tk):
     ip = None
     lights = None
     colors = None
+    device_id = None
 
     def __init__(self):
         super().__init__()
@@ -60,6 +62,10 @@ class FactFeelUI(tk.Tk):
             self.validate_config_colors(colors)
             self.colors = data["colors"]
 
+            device_id = data["device"]
+            self.validate_device_id(device_id)
+            self.device_id = device_id
+
     def write_config_file(self):
         """
         Writes configuration data to file
@@ -71,6 +77,7 @@ class FactFeelUI(tk.Tk):
         data['ip'] = self.ip
         data['lights'] = self.lights
         data['colors'] = self.colors
+        data['device'] = self.device_id
 
         with open('config.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
@@ -108,6 +115,17 @@ class FactFeelUI(tk.Tk):
             raise Exception("Colors array is not in correct format. Must be two-dimensional")
         if not all(all(isinstance(item, float) for item in items) for items in colors):
             raise Exception("Colors array must only contain floats")
+
+    @staticmethod
+    def validate_device_id(device_id):
+        """
+        Validates that the device ID stored in configuration is an integer. You won't know it's
+        an actual valid input device ID until you attempt to instantiate the speech to text object
+        :param device_id:
+        :return:
+        """
+        if not isinstance(device_id, int):
+            raise Exception("Device ID must be an integer")
 
     def init_main_window(self):
         """
@@ -219,6 +237,7 @@ class FactFeelUI(tk.Tk):
         self.config_popup.rowconfigure(0, weight=1)
         self.config_popup.rowconfigure(1, weight=1)
         self.config_popup.rowconfigure(2, weight=1)
+        self.config_popup.rowconfigure(3, weight=1)
 
         # Setup IP capture
         tk.Label(self.config_popup, text='IP Address:').grid(row=0, column=0, sticky='news')
@@ -243,8 +262,14 @@ class FactFeelUI(tk.Tk):
                     self.color_list_textbox.insert(tk.END, ', ')
             self.color_list_textbox.insert(tk.END, '\n')
 
-        tk.Button(self.config_popup, text='Save', command=self.save_new_config_cmd).grid(row=3, column=0, sticky='news')
-        tk.Button(self.config_popup, text='Cancel', command=self.new_config_complete_cmd).grid(row=3, column=1, sticky='news')
+        # Setup Device ID capture
+        tk.Label(self.config_popup, text='Device ID:').grid(row=3, column=0, sticky='news')
+        self.device_id_textbox = tk.Text(self.config_popup)
+        self.device_id_textbox.grid(row=3, column=1, sticky='ew')
+        self.device_id_textbox.insert(tk.END, self.device_id)
+
+        tk.Button(self.config_popup, text='Save', command=self.save_new_config_cmd).grid(row=4, column=0, sticky='news')
+        tk.Button(self.config_popup, text='Cancel', command=self.new_config_complete_cmd).grid(row=4, column=1, sticky='news')
 
     def save_new_config_cmd(self):
         """
@@ -269,6 +294,10 @@ class FactFeelUI(tk.Tk):
             new_color_list.append(temp_array)
         self.validate_config_colors(new_color_list)
         self.colors = new_color_list
+
+        new_device_id = self.device_id_textbox.get("1.0", tk.END).strip()
+        self.validate_device_id(int(new_device_id)) # this is dumb in that I'm casting it before passing in
+        self.device_id = int(new_device_id)
 
         self.write_config_file()
         self.new_config_complete_cmd()
@@ -334,7 +363,7 @@ class FactFeelUI(tk.Tk):
             print(prt.message)
             return
 
-        speech_to_text = client.SpeechToText(init=True)
+        speech_to_text = client.SpeechToText(init=True, device=self.device_id)
         api = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
 
         seq_num = 1
