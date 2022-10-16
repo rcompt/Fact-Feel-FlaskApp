@@ -1,12 +1,16 @@
 {
-    "ip" : "192.168.0.186",
-    "lights" : [
-		"Desk Lamp 1",
-		"Desk Lightstrip 1",
-		"Desk Lamp 2"
+    "ip": "192.168.1.7",
+    "lights": [
+        "Hue lightstrip 1"
     ],
-    "colors" : [
-        [0.3227, 0.3290],
-        [0.643, 0.3045]
+    "colors": [
+        [
+            0.3227,
+            0.329
+        ],
+        [
+            0.643,
+            0.3045
+        ]
     ]
 }
