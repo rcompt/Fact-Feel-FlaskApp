@@ -8,9 +8,12 @@ from playsound import playsound
 import numpy as np
 from matplotlib import pyplot as plt
 
+import threading
+import queue
 import requests
 import json
 import logging
+import time
 
 log_config = {
         "filename" : "FactFeelApi.log",
@@ -228,6 +231,8 @@ class SpeechToText:
         if self._debug:
             print(f"Using device index {self._device} : {self.devices[self._device]}")
         
+        self._audio_queue = queue.Queue()
+        self.text_queue = queue.Queue()
         self._check_device()
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
@@ -252,14 +257,49 @@ class SpeechToText:
         if hasattr(self, "recognizer"):
 
             with sr.Microphone(device_index = self._device) as source:
-                #r.adjust_for_ambient_noise(source)
-                print("Say Something")
                 audio = self.recognizer.record(source, duration = duration)
-                print("got it")
             return audio
         
         else:
             raise RuntimeError("_listen() was called before calling initializing the recognizer! Please call initialize() before calling _listen()!")
+    
+    
+    def _stream_listen(self, duration):
+        '''
+        stream_listen: Streaming implementation of record audio for the given 'duration' in seconds
+        Param
+            duration: int
+        return
+            audio: <Unknown!!!>
+        '''
+        
+        if hasattr(self, "recognizer"):
+
+            while not self.audio_thread_stop_signal.is_set() and self.audio_thread.is_alive():
+                with sr.Microphone(device_index = self._device) as source:
+                    audio = self.recognizer.record(source, duration = duration)
+                    self._audio_queue.put(audio)
+        
+        else:
+            raise RuntimeError("_listen() was called before calling initializing the recognizer! Please call initialize() before calling _listen()!")
+    
+    def _stream_transcribe(self, duration):
+        '''
+        stream_transcribe: check if new audio in queue, then send to transcribe that audio to text
+        Param
+            duration: int
+        return
+            audio: <Unknown!!!>
+        '''        
+        while not self.transcribe_thread_stop_signal.is_set() and self.transcribe_thread.is_alive():      
+        
+            while not self._audio_queue.empty():
+                new_audio_data = self._audio_queue.get()
+                text = self._voice(new_audio_data)
+                self.text_queue.put(text)
+            
+            time.sleep(duration)
+            
     
     def _voice(self, audio):
         '''
@@ -271,17 +311,59 @@ class SpeechToText:
         '''
         try:
             text = self.recognizer.recognize_google(audio)
-            ## call('espeak ' + text, shell = True)
-            print("you said: " + text)
             return text
         except sr.UnknownValueError:
-            ## call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
             print("Google Speech Recognition could not understand")
             return 0
         except sr.RequestError as e:
             print(f"Could not request results from Google: {e}")
             return 0
     
+    def stream_main_loop(self, duration = 15):
+        try:      
+            if not self.audio_thread.is_alive() and not self.audio_thread_stop_signal.is_set():
+                return
+        
+            while not self._audio_queue.empty():
+                new_audio_data = self._audio_queue.get()
+                text = self._voice(new_audio_data)
+                self.text_queue.put(text)
+                print(f"Stream_Listen: {text}")
+            
+            time.sleep(duration)
+            self.stream_main_loop()
+            
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt, stopping stream")
+            self.stream_stop()
+
+    
+    def stream_stop(self):
+        """
+        Stops the API thread in order to update initial configuration
+        :return:
+        """
+        # Set the event that will cause the thread to stop
+        self.audio_thread_stop_signal.set()
+        self.audio_thread.join()
+    
+    def stream_listen_transcribe(self, duration = 15):
+        try:
+            self.audio_thread_stop_signal = threading.Event()
+            self.audio_thread = threading.Thread(target=self._stream_listen, args=[duration])
+            self.audio_thread.daemon = True
+            self.audio_thread.start()
+            
+            self.transcribe_thread_stop_signal = threading.Event()
+            self.transcribe_thread = threading.Thread(target=self._stream_transcribe, args=[duration])
+            self.transcribe_thread.daemon = True
+            self.transcribe_thread.start()        
+            
+                              
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt, stopping stream")
+            self.stream_stop()
+            
     def listen_transcribe(self, duration = 15):
         return self._voice(self._listen(duration))
     
@@ -411,22 +493,31 @@ if __name__ == "__main__":
             [0.643, 0.3045]   # Dark Red
             ]
         )
-    listener = SpeechToText(init = True, debug = True)
+    listener = SpeechToText(device = 4,init = True, debug = True)
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/explain")
+    
+    listener.stream_listen_transcribe()
     
     while(1):
         
-        text = listener.listen_transcribe()
-                # data to be sent to api
-        if text != 0:
+         #Use to test base listening method
+         #text = listener.listen_transcribe()
+         #time.sleep(5)
+        
+         if not listener.text_queue.empty():
+        
+             text = listener.text_queue.get()
             
-            prediction, _ = fact_feel.fact_feel_explain(text)
-            print(f"Recieved prediction of {prediction}")
+             # data to be sent to api
+             if text != 0:
             
-            light_orchestrator.fact_feel_modify_lights(prediction)
+                 prediction, _ = fact_feel.fact_feel_explain(text)
+                 print(f"Recieved prediction of {prediction}")
             
-        else:
+                 light_orchestrator.fact_feel_modify_lights(prediction)
             
-            print("Skipping due to issues with response from Google")
+             else:
             
-        seq += 1
+                 print("Skipping due to issues with response from Google")
+            
+             seq += 1
