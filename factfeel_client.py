@@ -257,10 +257,7 @@ class SpeechToText:
         if hasattr(self, "recognizer"):
 
             with sr.Microphone(device_index = self._device) as source:
-                #r.adjust_for_ambient_noise(source)
-                ## print("Say Something")
                 audio = self.recognizer.record(source, duration = duration)
-                ## print("got it")
             return audio
         
         else:
@@ -280,10 +277,7 @@ class SpeechToText:
 
             while not self.audio_thread_stop_signal.is_set() and self.audio_thread.is_alive():
                 with sr.Microphone(device_index = self._device) as source:
-                    #r.adjust_for_ambient_noise(source)
-                    #print("Stream_Listen: Say Something")
                     audio = self.recognizer.record(source, duration = duration)
-                    #print("Stream_Listen: got it")
                     self._audio_queue.put(audio)
         
         else:
@@ -303,7 +297,6 @@ class SpeechToText:
                 new_audio_data = self._audio_queue.get()
                 text = self._voice(new_audio_data)
                 self.text_queue.put(text)
-                print(f"Stream_Listen: {text}")
             
             time.sleep(duration)
             
@@ -318,11 +311,8 @@ class SpeechToText:
         '''
         try:
             text = self.recognizer.recognize_google(audio)
-            ## call('espeak ' + text, shell = True)
-            ## print("you said: " + text)
             return text
         except sr.UnknownValueError:
-            ## call(["espeak", "-s140 -ven+18 -z", "I don't know, it is hard to fucking hear."])
             print("Google Speech Recognition could not understand")
             return 0
         except sr.RequestError as e:
@@ -369,8 +359,6 @@ class SpeechToText:
             self.transcribe_thread.daemon = True
             self.transcribe_thread.start()        
             
-            #time.sleep(duration)
-            #self.stream_main_loop(duration = duration)
                               
         except KeyboardInterrupt:
             print("Keyboard Interrupt, stopping stream")
@@ -512,8 +500,8 @@ if __name__ == "__main__":
     
     while(1):
         
+         #Use to test base listening method
          #text = listener.listen_transcribe()
-        
          #time.sleep(5)
         
          if not listener.text_queue.empty():
