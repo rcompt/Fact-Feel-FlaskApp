@@ -269,7 +269,7 @@ class SpeechToText:
     
     def _stream_listen(self, duration):
         '''
-        listen: Record audio for the given 'duration' in seconds
+        stream_listen: Streaming implementation of record audio for the given 'duration' in seconds
         Param
             duration: int
         return
@@ -288,6 +288,25 @@ class SpeechToText:
         
         else:
             raise RuntimeError("_listen() was called before calling initializing the recognizer! Please call initialize() before calling _listen()!")
+    
+    def _stream_transcribe(self, duration):
+        '''
+        stream_transcribe: check if new audio in queue, then send to transcribe that audio to text
+        Param
+            duration: int
+        return
+            audio: <Unknown!!!>
+        '''        
+        while not self.transcribe_thread_stop_signal.is_set() and self.transcribe_thread.is_alive():      
+        
+            while not self._audio_queue.empty():
+                new_audio_data = self._audio_queue.get()
+                text = self._voice(new_audio_data)
+                self.text_queue.put(text)
+                print(f"Stream_Listen: {text}")
+            
+            time.sleep(duration)
+            
     
     def _voice(self, audio):
         '''
@@ -345,8 +364,13 @@ class SpeechToText:
             self.audio_thread.daemon = True
             self.audio_thread.start()
             
-            time.sleep(duration)
-            self.stream_main_loop(duration = duration)
+            self.transcribe_thread_stop_signal = threading.Event()
+            self.transcribe_thread = threading.Thread(target=self._stream_transcribe, args=[duration])
+            self.transcribe_thread.daemon = True
+            self.transcribe_thread.start()        
+            
+            #time.sleep(duration)
+            #self.stream_main_loop(duration = duration)
                               
         except KeyboardInterrupt:
             print("Keyboard Interrupt, stopping stream")
@@ -481,31 +505,31 @@ if __name__ == "__main__":
             [0.643, 0.3045]   # Dark Red
             ]
         )
-    listener = SpeechToText(device = 1,init = True, debug = True)
+    listener = SpeechToText(device = 4,init = True, debug = True)
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/explain")
     
     listener.stream_listen_transcribe()
     
-    # while(1):
+    while(1):
         
-    #     #text = listener.listen_transcribe()
+         #text = listener.listen_transcribe()
         
-    #     #time.sleep(5)
+         #time.sleep(5)
         
-    #     if not listener.text_queue.empty():
+         if not listener.text_queue.empty():
         
-    #         text = listener.text_queue.get()
+             text = listener.text_queue.get()
             
-    #         # data to be sent to api
-    #         if text != 0:
+             # data to be sent to api
+             if text != 0:
             
-    #             prediction, _ = fact_feel.fact_feel_explain(text)
-    #             print(f"Recieved prediction of {prediction}")
+                 prediction, _ = fact_feel.fact_feel_explain(text)
+                 print(f"Recieved prediction of {prediction}")
             
-    #             light_orchestrator.fact_feel_modify_lights(prediction)
+                 light_orchestrator.fact_feel_modify_lights(prediction)
             
-    #         else:
+             else:
             
-    #             print("Skipping due to issues with response from Google")
+                 print("Skipping due to issues with response from Google")
             
-    #         seq += 1
+             seq += 1
