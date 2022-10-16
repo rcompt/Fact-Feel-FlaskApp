@@ -281,9 +281,9 @@ class SpeechToText:
             while not self.audio_thread_stop_signal.is_set() and self.audio_thread.is_alive():
                 with sr.Microphone(device_index = self._device) as source:
                     #r.adjust_for_ambient_noise(source)
-                    ## print("Stream_Listen: Say Something")
+                    #print("Stream_Listen: Say Something")
                     audio = self.recognizer.record(source, duration = duration)
-                    ## print("Stream_Listen: got it")
+                    #print("Stream_Listen: got it")
                     self._audio_queue.put(audio)
         
         else:
@@ -310,7 +310,7 @@ class SpeechToText:
             print(f"Could not request results from Google: {e}")
             return 0
     
-    def stream_main_loop(self):
+    def stream_main_loop(self, duration = 15):
         try:      
             if not self.audio_thread.is_alive() and not self.audio_thread_stop_signal.is_set():
                 return
@@ -319,9 +319,9 @@ class SpeechToText:
                 new_audio_data = self._audio_queue.get()
                 text = self._voice(new_audio_data)
                 self.text_queue.put(text)
-                #print(f"Stream_Listen: {text}")
+                print(f"Stream_Listen: {text}")
             
-            time.sleep(5)
+            time.sleep(duration)
             self.stream_main_loop()
             
         except KeyboardInterrupt:
@@ -346,7 +346,7 @@ class SpeechToText:
             self.audio_thread.start()
             
             time.sleep(duration)
-            self.stream_main_loop()
+            self.stream_main_loop(duration = duration)
                               
         except KeyboardInterrupt:
             print("Keyboard Interrupt, stopping stream")
@@ -481,24 +481,31 @@ if __name__ == "__main__":
             [0.643, 0.3045]   # Dark Red
             ]
         )
-    listener = SpeechToText(init = True, debug = True)
+    listener = SpeechToText(device = 1,init = True, debug = True)
     fact_feel = FactFeelApi(url = "https://fact-feel-flaskapp.herokuapp.com/explain")
     
     listener.stream_listen_transcribe()
     
     # while(1):
         
-    #     text = listener.listen_transcribe()
-    #             # data to be sent to api
-    #     if text != 0:
+    #     #text = listener.listen_transcribe()
+        
+    #     #time.sleep(5)
+        
+    #     if not listener.text_queue.empty():
+        
+    #         text = listener.text_queue.get()
             
-    #         prediction, _ = fact_feel.fact_feel_explain(text)
-    #         print(f"Recieved prediction of {prediction}")
+    #         # data to be sent to api
+    #         if text != 0:
             
-    #         light_orchestrator.fact_feel_modify_lights(prediction)
+    #             prediction, _ = fact_feel.fact_feel_explain(text)
+    #             print(f"Recieved prediction of {prediction}")
             
-    #     else:
+    #             light_orchestrator.fact_feel_modify_lights(prediction)
             
-    #         print("Skipping due to issues with response from Google")
+    #         else:
             
-    #     seq += 1
+    #             print("Skipping due to issues with response from Google")
+            
+    #         seq += 1
