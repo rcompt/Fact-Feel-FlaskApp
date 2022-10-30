@@ -301,7 +301,8 @@ class SpeechToText:
             while not self._audio_queue.empty():
                 new_audio_data = self._audio_queue.get()
                 text = self._voice(new_audio_data)
-                self.text_queue.put(text)
+                if type(text) == str:
+                    self.text_queue.put(text)
             
             time.sleep(duration)
             
