@@ -466,6 +466,10 @@ class FactFeelApi:
             print("JSONDecodeError, did not recieve a response with "
                               f"text include! \n {err} \n")
             print(response)
+            
+            self.fact_feel_text_data[self.seq]["PRED"] = 0
+            self.fact_feel_text_data[self.seq]["WEIGHTS"] = {}
+            
             return None, None
         
         prediction = response_data["prediction"][0]
