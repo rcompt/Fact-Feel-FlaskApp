@@ -172,6 +172,16 @@ class FactFeelUI(tk.Tk):
         self.prediction_tracker_canvas.draw()
         self.prediction_tracker_canvas.get_tk_widget().grid(row=0, rowspan=2, column=1, sticky='ew')
 
+        self.protocol('WM_DELETE_WINDOW', self.on_closing)
+
+    def on_closing(self):
+        print('Command to shut down app has been received. Waiting for API thread to join')
+        self.shutdown()
+
+    def shutdown(self):
+        self.api_thread_stop_signal.set()
+        self.api_thread.join()
+
     def poll_api_thread(self):
         """
         Updates the GUI thread when the fact/feel thread updates
@@ -208,8 +218,7 @@ class FactFeelUI(tk.Tk):
         :return:
         """
         # Set the event that will cause the thread to stop
-        self.api_thread_stop_signal.set()
-        self.api_thread.join()
+        self.shutdown()
         self.setup_runtime_config_popup()
 
     def setup_runtime_config_popup(self):
@@ -363,19 +372,26 @@ class FactFeelUI(tk.Tk):
             print(prt.message)
             return
 
-        speech_to_text = client.SpeechToText(init=True, device=self.device_id)
+        try:
+            speech_to_text = client.SpeechToText(init=True, device=self.device_id)
+        except RuntimeError as re:
+            print(re.message)
+            return
+        except ValueError as ve:
+            print(ve.message)
+            return
+
+        wait_time = 15
         api = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
 
-        seq_num = 1
-
         while not self.api_thread_stop_signal.is_set():
-            print(f"Thread is_alive() is: ", self.api_thread.is_alive())
-            text = speech_to_text.listen_transcribe()
+            print('Listening for speech')
+            speech_to_text.stream_listen_transcribe(duration=wait_time)
 
-            self.append_textbox(text)
+            try:
+                text = speech_to_text.text_queue.get(block=True, timeout=wait_time)
+                self.append_textbox(text)
 
-            # data to be sent to api
-            if text != 0:
                 prediction, weight_map = api.fact_feel_explain(text)
 
                 print("Weight Map\n")
@@ -388,15 +404,12 @@ class FactFeelUI(tk.Tk):
                 # add to queue in order to pass to main GUI thread
                 self.new_data_queue.put(new_data)
 
-                # print(f"Received prediction of {prediction}")
-
                 light_orchestrator.fact_feel_modify_lights(prediction)
+            except queue.Empty as e:
+                print("Did not receive text input in allotted time")
 
-            else:
-                print("Skipping due to issues with response from Google")
-
-            seq_num += 1
-
+        print('API thread ending')
+        speech_to_text.stream_stop()
 
 ########################################################################################################################
 

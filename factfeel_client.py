@@ -275,7 +275,7 @@ class SpeechToText:
         
         if hasattr(self, "recognizer"):
 
-            while not self.audio_thread_stop_signal.is_set() and self.audio_thread.is_alive():
+            while not self.audio_thread_stop_signal.is_set():
                 with sr.Microphone(device_index = self._device) as source:
                     audio = self.recognizer.record(source, duration = duration)
                     self._audio_queue.put(audio)
@@ -291,7 +291,7 @@ class SpeechToText:
         return
             audio: <Unknown!!!>
         '''        
-        while not self.transcribe_thread_stop_signal.is_set() and self.transcribe_thread.is_alive():      
+        while not self.transcribe_thread_stop_signal.is_set():
         
             while not self._audio_queue.empty():
                 new_audio_data = self._audio_queue.get()
@@ -346,6 +346,9 @@ class SpeechToText:
         # Set the event that will cause the thread to stop
         self.audio_thread_stop_signal.set()
         self.audio_thread.join()
+
+        self.transcribe_thread_stop_signal.set()
+        self.transcribe_thread.join()
     
     def stream_listen_transcribe(self, duration = 15):
         try:
