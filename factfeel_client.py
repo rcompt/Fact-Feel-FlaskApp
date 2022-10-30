@@ -138,19 +138,24 @@ class LightOrchestrator:
     
     def fact_feel_modify_lights(self, prediction):
         
-        if prediction < 0:
-            step_size = -1 + int(prediction)
-        else:
-            step_size = 1 + int(prediction)
+        if prediction:
             
-        if self.num_lights == 1:
-            self.lamp_spectrum_state[self.light_order[0]] = self.lamp_spectrum_state[self.light_order[0]] + step_size
-        else:
-            for idx, light in enumerate(self.light_order):
-                self.lamp_spectrum_state[self.light_order[idx]] = self.lamp_spectrum_state[self.light_order[idx]] + step_size
+            if prediction < 0:
+                step_size = -1 + int(prediction)
+            else:
+                step_size = 1 + int(prediction)
                 
-        self.spectrum_to_color()
-        self.set_colors()
+            if self.num_lights == 1:
+                self.lamp_spectrum_state[self.light_order[0]] = self.lamp_spectrum_state[self.light_order[0]] + step_size
+            else:
+                for idx, light in enumerate(self.light_order):
+                    self.lamp_spectrum_state[self.light_order[idx]] = self.lamp_spectrum_state[self.light_order[idx]] + step_size
+                    
+            self.spectrum_to_color()
+            self.set_colors()
+            
+        else:
+            print("Prediction passed in was None!")
 
 
 class SpeechToText:
@@ -410,7 +415,15 @@ class FactFeelApi:
         response = requests.post(url = self.fact_feel_url, json = data) 
           
         # extracting response text
-        response_data = json.loads(response.text)
+        try:
+            response_data = json.loads(response.text)
+        except json.JSONDecodeError as err:
+            self.logger.error("JSONDecodeError, did not recieve a response with "
+                              f"text include! \n {err} \n")
+            print("JSONDecodeError, did not recieve a response with "
+                              f"text include! \n {err} \n")
+            print(response)
+            return None
         
         prediction = response_data["prediction"][0]
         
@@ -447,7 +460,15 @@ class FactFeelApi:
         response = requests.post(url = self.fact_feel_url, json = data) 
           
         # extracting response text
-        response_data = json.loads(response.text)
+        try:
+            response_data = json.loads(response.text)
+        except json.JSONDecodeError as err:
+            self.logger.error("JSONDecodeError, did not recieve a response with "
+                              f"text include! \n {err} \n")
+            print("JSONDecodeError, did not recieve a response with "
+                              f"text include! \n {err} \n")
+            print(response)
+            return None, None
         
         prediction = response_data["prediction"][0]
         weights = response_data["weights"]
