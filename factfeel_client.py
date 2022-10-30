@@ -460,7 +460,7 @@ class FactFeelApi:
             print("JSONDecodeError, did not recieve a response with "
                               f"text include! \n {err} \n")
             print(response)
-            return None
+            return None, None
         
         prediction = response_data["prediction"][0]
         weights = response_data["weights"]
