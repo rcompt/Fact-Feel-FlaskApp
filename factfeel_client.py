@@ -407,7 +407,15 @@ class FactFeelApi:
         response = requests.post(url = self.fact_feel_url, json = data) 
           
         # extracting response text
-        response_data = json.loads(response.text)
+        try:
+            response_data = json.loads(response.text)
+        except json.JSONDecodeError as err:
+            self.logger.error("JSONDecodeError, did not recieve a response with "
+                              f"text include! \n {err} \n")
+            print("JSONDecodeError, did not recieve a response with "
+                              f"text include! \n {err} \n")
+            print(response)
+            return None
         
         prediction = response_data["prediction"][0]
         
