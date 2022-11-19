@@ -177,6 +177,7 @@ class FactFeelUI(tk.Tk):
     def on_closing(self):
         print('Command to shut down app has been received. Waiting for API thread to join')
         self.shutdown()
+        self.destroy()
 
     def shutdown(self):
         self.api_thread_stop_signal.set()
@@ -381,12 +382,12 @@ class FactFeelUI(tk.Tk):
             print(ve.message)
             return
 
-        wait_time = 15
+        wait_time = 2
         api = client.FactFeelApi(url="https://fact-feel-flaskapp.herokuapp.com/explain", plot_show=False)
+        speech_to_text.stream_listen_transcribe(duration=wait_time)
 
         while not self.api_thread_stop_signal.is_set():
             print('Listening for speech')
-            speech_to_text.stream_listen_transcribe(duration=wait_time)
 
             try:
                 text = speech_to_text.text_queue.get(block=True, timeout=wait_time)
@@ -410,6 +411,7 @@ class FactFeelUI(tk.Tk):
 
         print('API thread ending')
         speech_to_text.stream_stop()
+        print('API thread stopped')
 
 ########################################################################################################################
 
