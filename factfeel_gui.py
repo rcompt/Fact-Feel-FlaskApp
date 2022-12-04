@@ -291,6 +291,8 @@ class FactFeelUI(tk.Tk):
         self.ip = new_ip_address
 
         new_light_list = self.light_list_textbox.get("1.0", tk.END).strip().split(',')
+        for i in range(len(new_light_list)):
+            new_light_list[i] = new_light_list[i].strip()
         self.validate_config_light_list(new_light_list)
         self.lights = new_light_list
 
