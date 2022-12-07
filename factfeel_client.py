@@ -1,7 +1,7 @@
 # imports
 import phue
 import speech_recognition as sr
-import pyaudio
+import sounddevice as sd
 from rgbxy import Converter
 from playsound import playsound
 
@@ -181,25 +181,23 @@ class SpeechToText:
         self._device = device
     
     def _device_listings(self):
-        audio = pyaudio.PyAudio()
-        
-        num_devices = audio.get_host_api_info_by_index(0).get("deviceCount",0)
-        device_count = 0
+        self._sd_devices = sd.query_devices()
         self.devices = {}
-        for i in range(0, num_devices):
-            if (audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+        device_count = 0
+        
+        for i in range(0, len(self._sd_devices)):
+            if self._sd_devices[i]['max_input_channels'] > 0:
                 if self._debug:
-                    print("Input Device id ", i, " - ", audio.get_device_info_by_host_api_device_index(0, i).get('name'))
+                    print("Input Device id ", i, " - ", self._sd_devices[i]['name'])
                     
-                self.devices[i] = audio.get_device_info_by_host_api_device_index(0, i).get('name')
+                self.devices[i] = self._sd_devices[i]['name']
                 device_count += 1
+                
         if self._debug:
             print(f"{device_count} devices found through PyAudio.")
             
         return self.devices
-        
-    def _set_device(self, device_index):
-        self.device
+
         
     def print_dict(self, dict_):
         new_str = "{"
@@ -210,11 +208,11 @@ class SpeechToText:
         
         
     def _check_device(self):
-        audio = pyaudio.PyAudio()
+
         if hasattr(self, "device"):
             try:
-                input_device = audio.get_device_info_by_index(self.device)
-                if input_device.get("maxInputChannels",0) == 0:
+                input_device = self._sd_devices[self._device]
+                if input_device.get("max_input_channels",0) == 0:
                     raise RuntimeError(
                         (f"Device selected {input_device.get('name','Unknown')} "
                          "does not contain any input channels, please select "
