@@ -239,6 +239,10 @@ class SpeechToText:
         
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
+            
+            """
+            TODO: Change sound library away from playsound, look
+                  for a library that will work on the Raspberry Pi
             playsound(
                 os.path.join(
                     "Fact-Feel-App",
@@ -246,6 +250,7 @@ class SpeechToText:
                     "Im_Listening.mp3"
                 )
             )
+            """
             self.recognizer.adjust_for_ambient_noise(source,duration=10)  
     
     def _listen(self, duration):
