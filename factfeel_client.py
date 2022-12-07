@@ -163,9 +163,6 @@ class SpeechToText:
     def __init__(self, device = 2, init = False, debug = False):
         
         self._debug = debug
-        
-        if debug:
-            self._device_listings()
         self._device = device
         
         if init:
@@ -236,7 +233,10 @@ class SpeechToText:
         
         self._audio_queue = queue.Queue()
         self.text_queue = queue.Queue()
+        
+        self._device_listings()
         self._check_device()
+        
         self.recognizer = sr.Recognizer()
         with sr.Microphone(device_index = self._device) as source:
             playsound(
